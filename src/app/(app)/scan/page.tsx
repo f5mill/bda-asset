@@ -45,8 +45,7 @@ function ScanPageContent() {
   const { toast } = useToast()
 
   const [action, setAction] = useState<string>("update_location")
-  const [mode, setMode] = useState<"scanner" | "camera">("scanner")
-  const [inputValue, setInputValue] = useState("")
+  const [mode, setMode] = useState<"scanner" | "camera">("camera")
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -461,3 +460,5 @@ export default function ScanPage() {
         </Suspense>
     )
 }
+
+    
