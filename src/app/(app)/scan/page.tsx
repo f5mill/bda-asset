@@ -194,16 +194,35 @@ function ScanPageContent() {
             if (code) {
               try {
                 const url = new URL(code.data);
-                if (url.origin === window.location.origin && url.pathname === '/scan' && url.searchParams.has('assetId')) {
-                  router.push(url.pathname + url.search);
-                  if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
-                  if (video && video.srcObject) {
-                    (video.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+            
+                if (url.origin === window.location.origin && url.pathname === '/scan') {
+                  const scannedQrId = url.searchParams.get('id');
+            
+                  if (scannedQrId) {
+                    const asset = assets.find(a => a.qrCodeId === scannedQrId);
+                    
+                    // Stop scanning immediately after a valid QR is found
+                    if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
+                    if (videoRef.current && videoRef.current.srcObject) {
+                        (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+                    }
+            
+                    if (asset) {
+                      // Found the asset, redirect to scan page with assetId to update location.
+                      router.push(`/scan?assetId=${asset.id}`);
+                    } else {
+                      // This QR code is valid but not assigned to any asset.
+                      toast({
+                          variant: "destructive",
+                          title: "Unassigned QR Code",
+                          description: `This QR code is not linked to any asset. You can link it from an asset's detail page.`,
+                      });
+                    }
+                    return; // Exit tick loop
                   }
-                  return; // Stop scanning
                 }
               } catch (e) {
-                console.error("Scanned QR code is not a valid URL:", code.data, e);
+                // Not a valid URL or from a different domain, ignore and continue scanning.
               }
             }
           }

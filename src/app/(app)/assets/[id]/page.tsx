@@ -537,7 +537,7 @@ export default function AssetDetailsPage() {
                     <div className="p-4 bg-white rounded-md text-black flex flex-col items-center justify-center text-center">
                         <p className="font-bold text-lg">{asset.name}</p>
                         <div className="w-40 h-40 p-2 mx-auto">
-                           <QrCodeSvg path={`/scan?assetId=${asset.id}`} />
+                           <QrCodeSvg path={`/scan?id=${asset.qrCodeId}`} />
                         </div>
                         <p className="text-xs text-muted-foreground text-center font-mono">{asset.qrCodeId}</p>
                     </div>

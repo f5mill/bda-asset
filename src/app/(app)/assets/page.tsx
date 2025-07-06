@@ -333,7 +333,7 @@ export default function AssetsPage() {
                 <div className="p-4 bg-white rounded-md text-black flex flex-col items-center justify-center text-center">
                     <p className="font-bold text-lg">{showLabelAsset.name}</p>
                     <div className="w-40 h-40 p-2 mx-auto">
-                        <QrCodeSvg path={`/scan?assetId=${showLabelAsset.id}`} />
+                        <QrCodeSvg path={`/scan?id=${showLabelAsset.qrCodeId}`} />
                     </div>
                     <p className="text-xs text-muted-foreground text-center font-mono">{showLabelAsset.qrCodeId}</p>
                 </div>
