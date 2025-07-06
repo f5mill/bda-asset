@@ -107,13 +107,12 @@ export default function AppLayout({
                         </DropdownMenu>
                     </div>
                     <SidebarSeparator />
-                    <SidebarTrigger className="hidden md:block self-end group-data-[collapsible=icon]:self-center" />
                 </SidebarFooter>
             </Sidebar>
             <SidebarInset>
                 <header className="flex items-center justify-between p-4 border-b">
                     <div className="flex items-center gap-2">
-                         <SidebarTrigger className="md:hidden" />
+                         <SidebarTrigger />
                          <h1 className="text-lg font-semibold font-headline">Dashboard</h1>
                     </div>
                     <div className="flex items-center gap-2">
