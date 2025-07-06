@@ -12,7 +12,6 @@ import {
     CalendarDays,
     AlarmClock,
     LayoutList,
-    Users,
 } from "lucide-react"
 
 import {
@@ -72,54 +71,68 @@ export default function AppLayout({
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton
-                                href="/"
+                                asChild
                                 isActive={pathname === '/'}
                                 tooltip="Dashboard"
                             >
-                                <LayoutGrid />
-                                Dashboard
+                                <Link href="/">
+                                    <LayoutGrid />
+                                    Dashboard
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/scan" isActive={pathname.startsWith('/scan')} tooltip="Scan QR Code">
-                                <QrCode />
-                                Scan QR Code
+                            <SidebarMenuButton asChild isActive={pathname.startsWith('/scan')} tooltip="Scan QR Code">
+                                <Link href="/scan">
+                                    <QrCode />
+                                    Scan QR Code
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         
                         <SidebarSeparator className="my-2" />
 
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/bookings" isActive={pathname.startsWith('/bookings')} tooltip="Bookings">
-                                <CalendarDays />
-                                Bookings
+                            <SidebarMenuButton asChild isActive={pathname.startsWith('/bookings')} tooltip="Bookings">
+                                <Link href="/bookings">
+                                    <CalendarDays />
+                                    Bookings
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/reminders" isActive={pathname.startsWith('/reminders')} tooltip="Reminders">
-                                <AlarmClock />
-                                Reminders
+                            <SidebarMenuButton asChild isActive={pathname.startsWith('/reminders')} tooltip="Reminders">
+                                <Link href="/reminders">
+                                    <AlarmClock />
+                                    Reminders
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
 
                         <SidebarSeparator className="my-2" />
 
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/categories" isActive={pathname.startsWith('/categories')} tooltip="Categories">
-                                <LayoutList />
-                                Categories
+                            <SidebarMenuButton asChild isActive={pathname.startsWith('/categories')} tooltip="Categories">
+                                <Link href="/categories">
+                                    <LayoutList />
+                                    Categories
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/tags" isActive={pathname.startsWith('/tags')} tooltip="Tags">
-                                <Tags />
-                                Tags
+                            <SidebarMenuButton asChild isActive={pathname.startsWith('/tags')} tooltip="Tags">
+                                <Link href="/tags">
+                                    <Tags />
+                                    Tags
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/locations" isActive={pathname.startsWith('/locations')} tooltip="Locations">
-                                <MapPin />
-                                Locations
+                            <SidebarMenuButton asChild isActive={pathname.startsWith('/locations')} tooltip="Locations">
+                                <Link href="/locations">
+                                    <MapPin />
+                                    Locations
+                                </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
