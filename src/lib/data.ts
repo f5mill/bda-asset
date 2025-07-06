@@ -1,4 +1,4 @@
-import type { Asset } from './types';
+import type { Asset, Location } from './types';
 
 export const assets: Asset[] = [
   {
@@ -106,4 +106,12 @@ export const assets: Asset[] = [
       source: 'QR Code Scan'
     }
   },
+];
+
+export const locations: Location[] = [
+  { id: 'LOC-001', name: 'Floor 5, Desk 21, Los Angeles Office', address: '123 Main St, Los Angeles, CA 90012', description: 'Primary engineering workspace.' },
+  { id: 'LOC-002', name: 'Storage Room B, New York Office', address: '456 Market St, New York, NY 10004', description: 'Used for storing spare monitors and peripherals.' },
+  { id: 'LOC-003', name: 'Marketing Dept, London Office', address: '789 High St, London, WC2N 5DU', description: 'Hot-desking area for the marketing team.' },
+  { id: 'LOC-004', name: 'IT Department, Tokyo Office', address: '1-1-2 Otemachi, Chiyoda-ku, Tokyo 100-8111', description: 'IT support and repair center.' },
+  { id: 'LOC-005', name: 'Parking Garage, Level 2, Sydney Office', address: '222 George St, Sydney NSW 2000', description: 'Designated parking for company vehicles.' },
 ];

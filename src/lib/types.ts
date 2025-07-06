@@ -33,3 +33,10 @@ export type UnclaimedQRCode = {
     qrCodeValue: string; // The data embedded in the QR
     createdAt: string; // ISO date string
 };
+
+export type Location = {
+  id: string;
+  name: string;
+  address?: string;
+  description?: string;
+};
