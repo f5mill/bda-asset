@@ -42,6 +42,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { QrCodeSvg } from "@/components/qr-code-svg"
 import { ClientDate } from "@/components/client-date"
 import { Separator } from "@/components/ui/separator"
@@ -58,6 +67,8 @@ export default function AssetDetailsPage() {
   const [asset, setAsset] = useState<Asset | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+  const [newAssignedLocation, setNewAssignedLocation] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -179,6 +190,20 @@ export default function AssetDetailsPage() {
       maximumAge: 0,
     });
   };
+
+  const handleUpdateAssignedLocation = () => {
+    if (!asset || !newAssignedLocation) return;
+    // In a real app, this would also trigger a database update.
+    setAsset(prevAsset => {
+        if (!prevAsset) return null;
+        return { ...prevAsset, assignedLocation: newAssignedLocation };
+    });
+    toast({
+        title: 'Assigned Location Updated',
+        description: `Asset assigned location has been updated to: ${newAssignedLocation}`,
+    });
+    setIsLocationDialogOpen(false);
+  };
   
   if (isLoading) {
     return (
@@ -252,6 +277,15 @@ export default function AssetDetailsPage() {
               <DropdownMenuItem onClick={handleUpdateGps} disabled={isProcessing}>
                 <Crosshair className="mr-2 h-4 w-4" />
                 <span>{isProcessing ? "Updating..." : "Update GPS coordinates"}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => {
+                if (asset) {
+                    setNewAssignedLocation(asset.assignedLocation);
+                    setIsLocationDialogOpen(true);
+                }
+                }}>
+                <MapPin className="mr-2 h-4 w-4" />
+                <span>Edit assigned location</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
@@ -465,6 +499,34 @@ export default function AssetDetailsPage() {
             </Card>
         </div>
       </div>
+      <Dialog open={isLocationDialogOpen} onOpenChange={setIsLocationDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Edit Assigned Location</DialogTitle>
+                <DialogDescription>
+                    Update the fixed location where this asset should be stored. This does not affect the last scanned GPS coordinates.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="assigned-location" className="text-right">
+                        Location
+                    </Label>
+                    <Input
+                        id="assigned-location"
+                        value={newAssignedLocation}
+                        onChange={(e) => setNewAssignedLocation(e.target.value)}
+                        className="col-span-3"
+                        placeholder="e.g. Floor 5, LA Office"
+                    />
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsLocationDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleUpdateAssignedLocation}>Save Changes</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
