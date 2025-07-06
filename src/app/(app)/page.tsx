@@ -10,6 +10,9 @@ import {
   File,
   Trash2,
   Share,
+  Pencil,
+  Tag,
+  Copy,
 } from "lucide-react"
 import type { CheckedState } from "@radix-ui/react-checkbox"
 
@@ -223,10 +226,28 @@ export default function Dashboard() {
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuItem asChild>
-                                <Link href={`/assets/${asset.id}`}>View Details</Link>
+                                  <Link href={`/assets/${asset.id}`}>View Details</Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem>Check In/Out</DropdownMenuItem>
                                 <DropdownMenuItem>Assign Custodian</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    <span>Edit</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <Tag className="mr-2 h-4 w-4" />
+                                    <span>Show Label</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <Copy className="mr-2 h-4 w-4" />
+                                    <span>Duplicate</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive">
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    <span>Delete</span>
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                             </DropdownMenu>
                         </TableCell>
