@@ -3,10 +3,18 @@ import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 import {
+  AlarmClock,
   ChevronLeft,
+  Copy,
+  Crosshair,
   Download,
-  Printer,
   ExternalLink,
+  MapPin,
+  Pencil,
+  Printer,
+  QrCode,
+  Trash2,
+  UserRoundPlus,
 } from "lucide-react"
 
 import { assets } from "@/lib/data"
@@ -25,6 +33,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { QrCodeSvg } from "@/components/qr-code-svg"
@@ -65,10 +74,41 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
                 <Button variant="outline">Actions</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Edit</DropdownMenuItem>
-              <DropdownMenuItem>Check In/Out</DropdownMenuItem>
-              <DropdownMenuItem>Assign Custodian</DropdownMenuItem>
-              <DropdownMenuItem>View History</DropdownMenuItem>
+              <DropdownMenuItem>
+                <UserRoundPlus className="mr-2 h-4 w-4" />
+                <span>Assign custody</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <MapPin className="mr-2 h-4 w-4" />
+                <span>Update location</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Crosshair className="mr-2 h-4 w-4" />
+                <span>Update GPS coordinates</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <QrCode className="mr-2 h-4 w-4" />
+                <span>Relink QR Code</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <AlarmClock className="mr-2 h-4 w-4" />
+                <span>Set reminder</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Pencil className="mr-2 h-4 w-4" />
+                <span>Edit</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Copy className="mr-2 h-4 w-4" />
+                <span>Duplicate</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive">
+                <Trash2 className="mr-2 h-4 w-4" />
+                <span>Delete</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <Button>Book</Button>
