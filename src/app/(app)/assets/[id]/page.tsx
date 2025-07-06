@@ -488,9 +488,9 @@ export default function AssetDetailsPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="h-48 w-full rounded-t-lg overflow-hidden bg-muted">
-                        {asset.location.lat && asset.location.lng ? (
+                        {asset.location.lat && asset.location.lng && process.env.NEXT_PUBLIC_MAPTILER_KEY ? (
                             <Image
-                                src={`https://api.maptiler.com/maps/streets-v2/static/${asset.location.lng},${asset.location.lat},14/350x192.png?key=GET_YOUR_OWN_KEY_AT_MAPTILER_COM`}
+                                src={`https://api.maptiler.com/maps/streets-v2/static/${asset.location.lng},${asset.location.lat},14/350x192.png?key=${process.env.NEXT_PUBLIC_MAPTILER_KEY}`}
                                 alt="Map of asset location"
                                 width={350}
                                 height={192}
