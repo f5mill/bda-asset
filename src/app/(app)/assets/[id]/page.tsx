@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import {
   AlarmClock,
   CalendarCheck,
@@ -23,7 +23,7 @@ import {
   UserRoundPlus,
 } from "lucide-react"
 
-import { assets } from "@/lib/data"
+import { assets, bookings as initialBookings } from "@/lib/data"
 import { getBadgeVariant } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -58,16 +58,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import type { Asset } from "@/lib/types"
+import type { Asset, Booking } from "@/lib/types"
 import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 
 export default function AssetDetailsPage() {
   const params = useParams<{ id: string }>()
+  const router = useRouter()
   const [asset, setAsset] = useState<Asset | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
+  const [isAddToBookingDialogOpen, setIsAddToBookingDialogOpen] = useState(false);
+  const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [newAssignedLocation, setNewAssignedLocation] = useState("");
   const { toast } = useToast();
 
@@ -205,6 +216,39 @@ export default function AssetDetailsPage() {
     setIsLocationDialogOpen(false);
   };
   
+  const handleAddToBooking = () => {
+    if (!selectedBookingId || !asset) return;
+
+    const bookingToAdd = bookings.find(b => b.id === selectedBookingId);
+    if (bookingToAdd && bookingToAdd.assetIds.includes(asset.id)) {
+        toast({
+            variant: "destructive",
+            title: "Asset Already Booked",
+            description: `${asset.name} is already part of this booking.`,
+        });
+        return;
+    }
+
+    // In a real app, this would be a database update.
+    // Here, we just update the local state for demonstration.
+    setBookings(prevBookings => 
+        prevBookings.map(b => 
+            b.id === selectedBookingId 
+            ? { ...b, assetIds: [...b.assetIds, asset.id] }
+            : b
+        )
+    );
+
+    toast({
+        title: "Asset Added to Booking",
+        description: `${asset.name} has been added to booking: ${bookingToAdd?.purpose}.`,
+    });
+    setIsAddToBookingDialogOpen(false);
+    setSelectedBookingId(null);
+  };
+  
+  const upcomingAndActiveBookings = bookings.filter(b => b.status === 'Upcoming' || b.status === 'Active');
+  
   if (isLoading) {
     return (
       <div className="mx-auto grid max-w-6xl flex-1 auto-rows-max gap-4">
@@ -322,11 +366,11 @@ export default function AssetDetailsPage() {
               <Button>Book</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => router.push(`/bookings/new?assetId=${asset.id}`)}>
                 <CalendarPlus className="mr-2 h-4 w-4" />
                 <span>Create new booking</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setIsAddToBookingDialogOpen(true)}>
                 <CalendarCheck className="mr-2 h-4 w-4" />
                 <span>Add to existing booking</span>
               </DropdownMenuItem>
@@ -527,6 +571,40 @@ export default function AssetDetailsPage() {
             </DialogFooter>
         </DialogContent>
       </Dialog>
+       <Dialog open={isAddToBookingDialogOpen} onOpenChange={setIsAddToBookingDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Add to Existing Booking</DialogTitle>
+                <DialogDescription>
+                    Select a booking to add "{asset.name}" to.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <Select onValueChange={setSelectedBookingId} defaultValue={selectedBookingId || undefined}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a booking..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {upcomingAndActiveBookings.length > 0 ? (
+                      upcomingAndActiveBookings.map(booking => (
+                        <SelectItem key={booking.id} value={booking.id}>
+                          {booking.purpose} ({new Date(booking.startDate).toLocaleDateString()} - {new Date(booking.endDate).toLocaleDateString()})
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <p className="p-4 text-sm text-muted-foreground">No active or upcoming bookings.</p>
+                    )}
+                  </SelectContent>
+                </Select>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAddToBookingDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddToBooking} disabled={!selectedBookingId}>Add to Booking</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
+
+    

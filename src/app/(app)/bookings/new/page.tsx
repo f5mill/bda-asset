@@ -2,8 +2,8 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -60,6 +60,7 @@ type BookingFormValues = z.infer<typeof bookingFormSchema>
 
 export default function NewBookingPage() {
     const router = useRouter()
+    const searchParams = useSearchParams()
     const { toast } = useToast()
     const [openAssetSelector, setOpenAssetSelector] = useState(false)
 
@@ -72,6 +73,13 @@ export default function NewBookingPage() {
             notes: "",
         },
     })
+    
+    useEffect(() => {
+        const assetId = searchParams.get('assetId');
+        if (assetId) {
+            form.setValue('assetIds', [assetId]);
+        }
+    }, [searchParams, form]);
     
     function onSubmit(data: BookingFormValues) {
         console.log("New Booking Data:", data)
@@ -275,3 +283,5 @@ export default function NewBookingPage() {
         </Form>
     )
 }
+
+    
