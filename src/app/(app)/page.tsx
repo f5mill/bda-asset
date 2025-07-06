@@ -5,7 +5,7 @@ import {
   Search,
 } from "lucide-react"
 import { assets } from "@/lib/data"
-import { cn } from "@/lib/utils"
+import { getBadgeVariant } from "@/lib/utils"
 
 import {
   Card,
@@ -35,21 +35,6 @@ import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Dashboard() {
-  const getBadgeVariant = (status: string) => {
-    switch (status) {
-      case "Available":
-        return "default"
-      case "Checked Out":
-        return "secondary"
-      case "In Repair":
-        return "destructive"
-      case "Booked":
-        return "outline"
-      default:
-        return "default"
-    }
-  }
-
   return (
     <div className="space-y-4">
       <Card>
@@ -129,7 +114,9 @@ export default function Dashboard() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>View Details</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href={`/assets/${asset.id}`}>View Details</Link>
+                        </DropdownMenuItem>
                         <DropdownMenuItem>Check In/Out</DropdownMenuItem>
                         <DropdownMenuItem>Assign Custodian</DropdownMenuItem>
                       </DropdownMenuContent>
