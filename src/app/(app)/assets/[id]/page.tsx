@@ -32,7 +32,7 @@ import { QrCodeSvg } from "@/components/qr-code-svg"
 import { Separator } from "@/components/ui/separator"
 import { ClientDate } from "@/components/client-date"
 
-export default function AssetDetailsPage({ params }: { params: { id: string } }) {
+export default async function AssetDetailsPage({ params }: { params: { id: string } }) {
   const asset = assets.find((a) => a.id === params.id)
 
   if (!asset) {
