@@ -13,6 +13,8 @@ import {
   Pencil,
   Tag,
   Copy,
+  ArrowUp,
+  ArrowDown,
 } from "lucide-react"
 import type { CheckedState } from "@radix-ui/react-checkbox"
 
@@ -55,16 +57,66 @@ import {
 } from "@/components/ui/dialog"
 import { QrCodeSvg } from "@/components/qr-code-svg"
 
+type SortableKey = 'name' | 'status' | 'custodian' | 'lastScan';
 
 export default function Dashboard() {
   const [selectedAssets, setSelectedAssets] = React.useState<string[]>([])
   const [showLabelAsset, setShowLabelAsset] = React.useState<Asset | null>(null)
+  const [sortConfig, setSortConfig] = React.useState<{ key: SortableKey; direction: 'ascending' | 'descending' } | null>(null);
 
   const filteredAssets = assets
 
+  const sortedAssets = React.useMemo(() => {
+    let sortableItems = [...filteredAssets];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        let aValue: any;
+        let bValue: any;
+        
+        switch (sortConfig.key) {
+            case 'custodian':
+                aValue = a.custodian?.name?.toLowerCase() ?? '';
+                bValue = b.custodian?.name?.toLowerCase() ?? '';
+                break;
+            case 'lastScan':
+                aValue = new Date(a.lastScan).getTime();
+                bValue = new Date(b.lastScan).getTime();
+                break;
+            default:
+                aValue = a[sortConfig.key]?.toString().toLowerCase();
+                bValue = b[sortConfig.key]?.toString().toLowerCase();
+        }
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredAssets, sortConfig]);
+
+  const requestSort = (key: SortableKey) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (columnKey: SortableKey) => {
+    if (!sortConfig || sortConfig.key !== columnKey) {
+      return null;
+    }
+    return sortConfig.direction === 'ascending' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
   const handleSelectAll = (checked: CheckedState) => {
     if (checked === true) {
-      setSelectedAssets(filteredAssets.map(asset => asset.id))
+      setSelectedAssets(sortedAssets.map(asset => asset.id))
     } else {
       setSelectedAssets([])
     }
@@ -78,8 +130,8 @@ export default function Dashboard() {
     )
   }
 
-  const isAllSelected = filteredAssets.length > 0 && selectedAssets.length === filteredAssets.length
-  const isSomeSelected = selectedAssets.length > 0 && selectedAssets.length < filteredAssets.length
+  const isAllSelected = sortedAssets.length > 0 && selectedAssets.length === sortedAssets.length
+  const isSomeSelected = selectedAssets.length > 0 && selectedAssets.length < sortedAssets.length
   const checkedState = isAllSelected ? true : (isSomeSelected ? 'indeterminate' : false)
 
   return (
@@ -146,18 +198,38 @@ export default function Dashboard() {
                             aria-label="Select all"
                         />
                     </TableHead>
-                    <TableHead>Asset</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Custodian</TableHead>
-                    <TableHead>Last Scan</TableHead>
+                    <TableHead>
+                        <Button variant="ghost" onClick={() => requestSort('name')}>
+                            Asset
+                            {getSortIcon('name')}
+                        </Button>
+                    </TableHead>
+                    <TableHead>
+                        <Button variant="ghost" onClick={() => requestSort('status')}>
+                            Status
+                            {getSortIcon('status')}
+                        </Button>
+                    </TableHead>
+                    <TableHead>
+                        <Button variant="ghost" onClick={() => requestSort('custodian')}>
+                            Custodian
+                            {getSortIcon('custodian')}
+                        </Button>
+                    </TableHead>
+                    <TableHead>
+                        <Button variant="ghost" onClick={() => requestSort('lastScan')}>
+                            Last Scan
+                            {getSortIcon('lastScan')}
+                        </Button>
+                    </TableHead>
                     <TableHead>
                         <span className="sr-only">Actions</span>
                     </TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {filteredAssets.length > 0 ? (
-                    filteredAssets.map((asset) => (
+                    {sortedAssets.length > 0 ? (
+                    sortedAssets.map((asset) => (
                         <TableRow key={asset.id} data-state={selectedAssets.includes(asset.id) ? "selected" : ""}>
                         <TableCell>
                             <Checkbox 
