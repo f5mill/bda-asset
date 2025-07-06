@@ -77,36 +77,6 @@ export default function NewAssetPage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>QR Code</CardTitle>
-            <CardDescription>
-              Link an existing QR code or generate a new one.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="qr-code">Link Existing QR Code</Label>
-                <Select>
-                  <SelectTrigger id="qr-code" aria-label="Select QR Code">
-                    <SelectValue placeholder="Select an unclaimed QR code" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="qr-1">QR-Z9Y8X7</SelectItem>
-                    <SelectItem value="qr-2">QR-W6V5U4</SelectItem>
-                    <SelectItem value="qr-3">QR-T3S2R1</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="text-center text-muted-foreground my-2">OR</div>
-              <Button variant="outline">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Generate and Link New QR Code
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
       <div className="flex items-center justify-center gap-2 md:hidden">
         <Button variant="outline" size="sm">
