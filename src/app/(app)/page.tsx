@@ -226,7 +226,7 @@ export default function Dashboard() {
         </div>
 
         <div className="grid auto-rows-max gap-4 xl:col-span-2">
-            <PlaceholderCard title="Location value" />
+            <PlaceholderCard title="Inventory Value" />
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-sm font-medium">Assets by category</CardTitle>
