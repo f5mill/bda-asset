@@ -1,6 +1,6 @@
 
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Camera } from "lucide-react"
@@ -17,8 +17,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
-export default function ScanPage() {
+function ScanPageContent() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
   
@@ -116,4 +117,38 @@ export default function ScanPage() {
       </Card>
     </div>
   )
+}
+
+function ScanPageFallback() {
+    return (
+        <div className="flex justify-center items-center h-full">
+            <Card className="w-full max-w-md">
+                <CardHeader className="text-center">
+                    <Skeleton className="h-8 w-3/4 mx-auto" />
+                    <Skeleton className="h-4 w-full mx-auto mt-2" />
+                </CardHeader>
+                <CardContent>
+                    <div className="p-4 text-center border rounded-lg space-y-2">
+                        <Skeleton className="h-5 w-1/2 mx-auto" />
+                        <Skeleton className="h-5 w-1/2 mx-auto" />
+                        <div className="pt-2">
+                            <Skeleton className="h-4 w-1/3 mx-auto" />
+                            <Skeleton className="h-4 w-2/3 mx-auto mt-1" />
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-4">
+                    <Skeleton className="h-10 w-full" />
+                </CardFooter>
+            </Card>
+        </div>
+    )
+}
+
+export default function ScanPage() {
+    return (
+        <Suspense fallback={<ScanPageFallback />}>
+            <ScanPageContent />
+        </Suspense>
+    )
 }
