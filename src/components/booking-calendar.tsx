@@ -84,7 +84,7 @@ function DayWithBookings({ displayMonth, date }: DayProps) {
         isOutside && "text-muted-foreground/50",
       )}
     >
-      <time dateTime={date.toISOString()} className="p-1">{format(date, "d")}</time>
+      <time dateTime={format(date, "yyyy-MM-dd")} className="p-1">{format(date, "d")}</time>
       {bookingsForDay.length > 0 && (
         <div className="absolute inset-x-0 top-7 flex w-full flex-1 flex-col gap-1">
           {tracksForDay.map((booking, trackIndex) => {
@@ -102,7 +102,7 @@ function DayWithBookings({ displayMonth, date }: DayProps) {
                 <TooltipTrigger asChild>
                   <div
                     className={cn(
-                      "h-4 cursor-pointer w-[calc(100%+1px)]",
+                      "h-4 cursor-pointer w-[calc(100%+1px)] -ml-px",
                       {
                         "bg-primary": booking.status === "Active",
                         "bg-accent": booking.status === "Upcoming",
@@ -164,7 +164,7 @@ export function BookingCalendar({ bookings, month, onMonthChange, className }: B
         let assignedTrack = -1;
 
         for (let i = 0; i < tracks.length; i++) {
-            if (bookingStart > tracks[i]) {
+            if (bookingStart >= tracks[i]) {
                 assignedTrack = i;
                 break;
             }
@@ -175,7 +175,7 @@ export function BookingCalendar({ bookings, month, onMonthChange, className }: B
         }
 
         layout.set(booking.id, assignedTrack);
-        tracks[assignedTrack] = new Date(booking.endDate);
+        tracks[assignedTrack] = endOfDay(new Date(booking.endDate));
     });
 
     setBookingLayout(layout);
