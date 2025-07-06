@@ -177,6 +177,7 @@ export function BookingCalendar({ bookings, month, onMonthChange, className }: B
         className={cn(className)}
         classNames={{
           month: "space-y-4",
+          caption: "hidden",
           table: "w-full border-collapse",
           head_row: "flex border-b",
           head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] p-2 text-center",
