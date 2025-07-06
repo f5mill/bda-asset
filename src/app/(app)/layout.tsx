@@ -18,6 +18,7 @@ import {
     SidebarFooter,
     SidebarInset,
     SidebarTrigger,
+    SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
@@ -39,7 +40,7 @@ export default function AppLayout({
 }) {
     return (
         <SidebarProvider>
-            <Sidebar>
+            <Sidebar collapsible="icon">
                 <SidebarHeader>
                     <Logo />
                 </SidebarHeader>
@@ -105,6 +106,8 @@ export default function AppLayout({
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
+                    <SidebarSeparator />
+                    <SidebarTrigger className="hidden md:block self-end group-data-[collapsible=icon]:self-center" />
                 </SidebarFooter>
             </Sidebar>
             <SidebarInset>
