@@ -80,13 +80,13 @@ function DayWithBookings({ displayMonth, date }: DayProps) {
   return (
     <div
       className={cn(
-        "relative flex h-full w-full flex-col items-start p-1",
+        "relative flex h-full w-full flex-col items-start",
         isOutside && "text-muted-foreground/50",
       )}
     >
-      <time dateTime={date.toISOString()}>{format(date, "d")}</time>
+      <time dateTime={date.toISOString()} className="p-1">{format(date, "d")}</time>
       {bookingsForDay.length > 0 && (
-        <div className="absolute inset-x-0 top-7 flex w-full flex-1 flex-col gap-1 px-1">
+        <div className="absolute inset-x-0 top-7 flex w-full flex-1 flex-col gap-1">
           {tracksForDay.map((booking, trackIndex) => {
             if (!booking) {
               return <div key={trackIndex} className="h-4" />;
@@ -102,7 +102,7 @@ function DayWithBookings({ displayMonth, date }: DayProps) {
                 <TooltipTrigger asChild>
                   <div
                     className={cn(
-                      "w-full h-4 cursor-pointer",
+                      "h-4 cursor-pointer w-[calc(100%+1px)]",
                       {
                         "bg-primary": booking.status === "Active",
                         "bg-accent": booking.status === "Upcoming",
@@ -129,7 +129,7 @@ function DayWithBookings({ displayMonth, date }: DayProps) {
             )
           })}
           {hiddenBookingsCount > 0 && (
-            <div className="text-xs text-muted-foreground mt-1">
+            <div className="text-xs text-muted-foreground mt-1 p-1">
               + {hiddenBookingsCount} more
             </div>
           )}
