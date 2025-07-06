@@ -7,7 +7,6 @@ import { useState, useEffect } from "react"
 import {
     LayoutGrid,
     QrCode,
-    Bell,
     Settings,
     MapPin,
     CalendarDays,
@@ -15,6 +14,7 @@ import {
     LayoutList,
     Boxes,
     Package,
+    ScanLine,
 } from "lucide-react"
 
 import {
@@ -237,8 +237,10 @@ function AppLayoutClient({
                          <h1 className="text-base sm:text-lg font-semibold font-headline truncate">{pageTitle || <>&nbsp;</>}</h1>
                     </div>
                     <div className="flex items-center gap-1 sm:gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
-                            <Bell className="h-5 w-5" />
+                        <Button asChild variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
+                            <Link href="/scan">
+                                <ScanLine className="h-5 w-5" />
+                            </Link>
                         </Button>
                         <ThemeToggle />
                     </div>

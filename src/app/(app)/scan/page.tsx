@@ -1,9 +1,9 @@
 
 "use client"
-import { useState, useEffect, Suspense, useCallback } from "react"
+import { useState, useEffect, Suspense, useCallback, useRef } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Camera, RefreshCw } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 
 import { assets } from "@/lib/data"
 import type { Asset } from "@/lib/types"
@@ -19,17 +19,21 @@ import {
 } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ClientDate } from "@/components/client-date"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 function ScanPageContent() {
   const searchParams = useSearchParams()
   const { toast } = useToast()
   
-  const [assetId, setAssetId] = useState<string | null>(null)
   const [scannedAsset, setScannedAsset] = useState<Asset | null>(null)
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false)
   const [updateError, setUpdateError] = useState<string | null>(null);
 
-  const parseUserAgent = (ua: string) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const assetId = searchParams.get('assetId');
+
+  const parseUserAgent = useCallback((ua: string) => {
     let browser = 'Unknown';
     let os = 'Unknown';
     let device = 'Desktop';
@@ -48,7 +52,7 @@ function ScanPageContent() {
     if (/mobi/i.test(ua)) device = 'Mobile';
 
     return { browser, os, device };
-  }
+  }, []);
 
   const updateAssetLocation = useCallback((asset: Asset) => {
     setIsUpdatingLocation(true);
@@ -146,13 +150,11 @@ function ScanPageContent() {
       timeout: 10000,
       maximumAge: 0,
     });
-  }, [toast]);
+  }, [toast, parseUserAgent]);
 
   useEffect(() => {
-    const id = searchParams.get('assetId')
-    if (id) {
-      setAssetId(id)
-      const assetData = assets.find((a) => a.id === id)
+    if (assetId) {
+      const assetData = assets.find((a) => a.id === assetId)
       if (assetData) {
         const assetCopy = JSON.parse(JSON.stringify(assetData));
         setScannedAsset(assetCopy)
@@ -162,11 +164,49 @@ function ScanPageContent() {
         toast({
           variant: "destructive",
           title: "Asset not found",
-          description: `No asset with ID ${id} exists.`,
+          description: `No asset with ID ${assetId} exists.`,
         })
       }
     }
-  }, [searchParams, toast, updateAssetLocation])
+  }, [assetId, toast, updateAssetLocation]);
+
+  useEffect(() => {
+    if (!assetId) {
+        const getCameraPermission = async () => {
+          try {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('Camera not supported on this browser.');
+            }
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            setHasCameraPermission(true);
+
+            if (videoRef.current) {
+              videoRef.current.srcObject = stream;
+            }
+          } catch (error) {
+            console.error('Error accessing camera:', error);
+            setHasCameraPermission(false);
+            const errorMessage = (error as Error).message || 'Could not access the camera.';
+            const errorTitle = (error as Error).name === 'NotAllowedError' ? 'Camera Access Denied' : 'Camera Error';
+            const errorDescription = (error as Error).name === 'NotAllowedError' ? 'Please enable camera permissions in your browser settings to use this app.' : errorMessage;
+            toast({
+              variant: 'destructive',
+              title: errorTitle,
+              description: errorDescription,
+            });
+          }
+        };
+
+        getCameraPermission();
+        
+        return () => {
+            if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                stream.getTracks().forEach(track => track.stop());
+            }
+        }
+    }
+  }, [assetId, toast]);
 
   if (!assetId) {
     return (
@@ -178,14 +218,24 @@ function ScanPageContent() {
                     Point your device's camera at an asset's QR code.
                 </CardDescription>
                 </CardHeader>
-                <CardContent>
-                <div className="aspect-square w-full rounded-lg bg-muted flex items-center justify-center relative overflow-hidden">
-                    <Camera className="h-24 w-24 text-muted-foreground" />
-                </div>
+                <CardContent className="space-y-4">
+                  <div className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center relative overflow-hidden">
+                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                    {hasCameraPermission === null && (
+                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                        <RefreshCw className="h-8 w-8 animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  {hasCameraPermission === false && (
+                    <Alert variant="destructive">
+                      <AlertTitle>Camera Access Required</AlertTitle>
+                      <AlertDescription>
+                        Please allow camera access in your browser settings to use this feature.
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </CardContent>
-                 <CardFooter>
-                    <p className="text-sm text-muted-foreground text-center w-full">This is a simulation. To test, scan a QR code from an asset's detail page or append `?assetId=...` to the URL.</p>
-                </CardFooter>
             </Card>
         </div>
     )
