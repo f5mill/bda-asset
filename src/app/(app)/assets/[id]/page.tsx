@@ -1,3 +1,4 @@
+
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
@@ -139,9 +140,9 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
             </Card>
             <Card>
                 <CardContent className="p-4">
-                    <div className="p-4 bg-white rounded-md text-black aspect-square flex flex-col items-center justify-center text-center">
+                    <div className="p-4 bg-white rounded-md text-black flex flex-col items-center justify-center text-center">
                         <p className="font-bold text-lg">{asset.name}</p>
-                        <div className="w-full p-2">
+                        <div className="w-40 h-40 p-2 mx-auto">
                            <QrCodeSvg path={`/scan?assetId=${asset.id}`} />
                         </div>
                         <p className="text-xs text-muted-foreground text-center font-mono">{asset.qrCodeId}</p>
@@ -154,12 +155,12 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
             </Card>
             <Card>
                 <CardContent className="p-0">
-                    <div className="aspect-video w-full rounded-t-md overflow-hidden bg-muted">
+                    <div className="h-48 w-full rounded-t-md overflow-hidden bg-muted">
                         <Image
-                        src="https://placehold.co/400x300.png"
+                        src="https://placehold.co/350x192.png"
                         alt="Map of asset location"
-                        width={400}
-                        height={300}
+                        width={350}
+                        height={192}
                         className="object-cover w-full h-full"
                         data-ai-hint="map"
                         />
