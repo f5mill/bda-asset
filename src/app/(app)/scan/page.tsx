@@ -2,8 +2,9 @@
 "use client"
 import { useState, useEffect, Suspense, useCallback, useRef } from "react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { RefreshCw } from "lucide-react"
+import jsQR from "jsqr"
 
 import { assets } from "@/lib/data"
 import type { Asset } from "@/lib/types"
@@ -23,6 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 function ScanPageContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const { toast } = useToast()
   
   const [scannedAsset, setScannedAsset] = useState<Asset | null>(null)
@@ -30,6 +32,8 @@ function ScanPageContent() {
   const [updateError, setUpdateError] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const animationFrameId = useRef<number>();
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const assetId = searchParams.get('assetId');
 
@@ -172,104 +176,148 @@ function ScanPageContent() {
 
   useEffect(() => {
     if (!assetId) {
-        const getCameraPermission = async () => {
-          try {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                throw new Error('Camera not supported on this browser.');
-            }
-            let stream;
-            try {
-                // Prefer the rear camera
-                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-            } catch (e) {
-                console.warn("Could not get rear camera, trying default camera.", e);
-                // Fallback to any available camera if the rear one fails
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            }
-            
-            setHasCameraPermission(true);
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
 
-            if (videoRef.current) {
-              videoRef.current.srcObject = stream;
-            }
-          } catch (error) {
-            console.error('Error accessing camera:', error);
-            setHasCameraPermission(false);
-            const errorMessage = (error as Error).message || 'Could not access the camera.';
-            const errorTitle = (error as Error).name === 'NotAllowedError' ? 'Camera Access Denied' : 'Camera Error';
-            const errorDescription = (error as Error).name === 'NotAllowedError' ? 'Please enable camera permissions in your browser settings to use this app.' : errorMessage;
-            toast({
-              variant: 'destructive',
-              title: errorTitle,
-              description: errorDescription,
+      const tick = () => {
+        if (video && video.readyState === video.HAVE_ENOUGH_DATA && canvas) {
+          canvas.height = video.videoHeight;
+          canvas.width = video.videoWidth;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "dontInvert",
             });
-          }
-        };
 
-        getCameraPermission();
-        
-        return () => {
-            if (videoRef.current && videoRef.current.srcObject) {
-                const stream = videoRef.current.srcObject as MediaStream;
-                stream.getTracks().forEach(track => track.stop());
+            if (code) {
+              try {
+                const url = new URL(code.data);
+                if (url.origin === window.location.origin && url.pathname === '/scan' && url.searchParams.has('assetId')) {
+                  router.push(url.pathname + url.search);
+                  if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
+                  if (video && video.srcObject) {
+                    (video.srcObject as MediaStream).getTracks().forEach(track => track.stop());
+                  }
+                  return; // Stop scanning
+                }
+              } catch (e) {
+                console.error("Scanned QR code is not a valid URL:", code.data, e);
+              }
             }
+          }
         }
+        if (video?.srcObject) { // Only continue if camera is on
+          animationFrameId.current = requestAnimationFrame(tick);
+        }
+      };
+
+      const getCameraPermission = async () => {
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            throw new Error('Camera not supported on this browser.');
+          }
+          let stream;
+          try {
+            // Prefer the rear camera
+            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          } catch (e) {
+            console.warn("Could not get rear camera, trying default camera.", e);
+            // Fallback to any available camera if the rear one fails
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          }
+
+          setHasCameraPermission(true);
+
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            // Start the scanning loop after a short delay to allow camera to initialize
+            setTimeout(() => {
+              animationFrameId.current = requestAnimationFrame(tick);
+            }, 100);
+          }
+        } catch (error) {
+          console.error('Error accessing camera:', error);
+          setHasCameraPermission(false);
+          const errorMessage = (error as Error).message || 'Could not access the camera.';
+          const errorTitle = (error as Error).name === 'NotAllowedError' ? 'Camera Access Denied' : 'Camera Error';
+          const errorDescription = (error as Error).name === 'NotAllowedError' ? 'Please enable camera permissions in your browser settings to use this app.' : errorMessage;
+          toast({
+            variant: 'destructive',
+            title: errorTitle,
+            description: errorDescription,
+          });
+        }
+      };
+
+      getCameraPermission();
+
+      return () => {
+        if (animationFrameId.current) {
+          cancelAnimationFrame(animationFrameId.current);
+        }
+        if (videoRef.current && videoRef.current.srcObject) {
+          const stream = videoRef.current.srcObject as MediaStream;
+          stream.getTracks().forEach(track => track.stop());
+        }
+      }
     }
-  }, [assetId, toast]);
+  }, [assetId, toast, router]);
 
   if (!assetId) {
     return (
-        <div className="flex justify-center items-center h-full">
-            <Card className="w-full max-w-md">
-                <CardHeader className="text-center">
-                <CardTitle className="font-headline text-2xl">Scan Asset QR Code</CardTitle>
-                <CardDescription>
-                    Point your device's camera at an asset's QR code.
-                </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center relative overflow-hidden">
-                    <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-                    {hasCameraPermission === null && (
-                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                        <RefreshCw className="h-8 w-8 animate-spin" />
-                      </div>
-                    )}
-                  </div>
-                  {hasCameraPermission === false && (
-                    <Alert variant="destructive">
-                      <AlertTitle>Camera Access Required</AlertTitle>
-                      <AlertDescription>
-                        Please allow camera access in your browser settings to use this feature.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
-            </Card>
-        </div>
+      <div className="flex justify-center items-center h-full">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="font-headline text-2xl">Scan Asset QR Code</CardTitle>
+            <CardDescription>
+              Point your device's camera at an asset's QR code.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center relative overflow-hidden">
+              <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+              <canvas ref={canvasRef} className="hidden" />
+              {hasCameraPermission === null && (
+                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                  <RefreshCw className="h-8 w-8 animate-spin" />
+                </div>
+              )}
+            </div>
+            {hasCameraPermission === false && (
+              <Alert variant="destructive">
+                <AlertTitle>Camera Access Required</AlertTitle>
+                <AlertDescription>
+                  Please allow camera access in your browser settings to use this feature.
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 
   if (!scannedAsset) {
-      return (
-        <div className="flex justify-center items-center h-full">
-            <Card className="w-full max-w-md text-center">
-                <CardHeader>
-                    <CardTitle className="font-headline text-2xl">Asset Not Found</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p>The asset ID provided in the URL does not exist.</p>
-                </CardContent>
-                <CardFooter>
-                    <Link href="/" className="w-full">
-                        <Button variant="outline" className="w-full">Back to Dashboard</Button>
-                    </Link>
-                </CardFooter>
-            </Card>
-        </div>
-      )
+    return (
+      <div className="flex justify-center items-center h-full">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <CardTitle className="font-headline text-2xl">Asset Not Found</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>The asset ID provided in the URL does not exist.</p>
+          </CardContent>
+          <CardFooter>
+            <Link href="/" className="w-full">
+              <Button variant="outline" className="w-full">Back to Dashboard</Button>
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
+    )
   }
-
 
   return (
     <div className="flex justify-center items-center h-full">
@@ -281,36 +329,36 @@ function ScanPageContent() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <div className="p-4 text-center border rounded-lg space-y-2">
-                 {isUpdatingLocation ? (
-                    <div className="flex flex-col items-center justify-center gap-2 p-4 text-muted-foreground">
-                        <RefreshCw className="h-6 w-6 animate-spin" />
-                        <p>Updating location...</p>
-                    </div>
-                ) : updateError ? (
-                     <div className="p-4 text-destructive-foreground bg-destructive rounded-md">
-                        <p className="font-semibold">Location Update Failed</p>
-                        <p className="text-sm">{updateError}</p>
-                    </div>
-                ) : (
-                    <>
-                        <p><span className="font-semibold">Status:</span> {scannedAsset.status}</p>
-                        <p><span className="font-semibold">Custodian:</span> {scannedAsset.custodian?.name || 'N/A'}</p>
-                        <div className="text-sm text-muted-foreground pt-2">
-                            <p className="font-semibold">Last scan:</p>
-                            <p>{scannedAsset.location.address}</p>
-                            <p><ClientDate date={scannedAsset.lastScan} /></p>
-                        </div>
-                    </>
-                )}
-            </div>
+          <div className="p-4 text-center border rounded-lg space-y-2">
+            {isUpdatingLocation ? (
+              <div className="flex flex-col items-center justify-center gap-2 p-4 text-muted-foreground">
+                <RefreshCw className="h-6 w-6 animate-spin" />
+                <p>Updating location...</p>
+              </div>
+            ) : updateError ? (
+              <div className="p-4 text-destructive-foreground bg-destructive rounded-md">
+                <p className="font-semibold">Location Update Failed</p>
+                <p className="text-sm">{updateError}</p>
+              </div>
+            ) : (
+              <>
+                <p><span className="font-semibold">Status:</span> {scannedAsset.status}</p>
+                <p><span className="font-semibold">Custodian:</span> {scannedAsset.custodian?.name || 'N/A'}</p>
+                <div className="text-sm text-muted-foreground pt-2">
+                  <p className="font-semibold">Last scan:</p>
+                  <p>{scannedAsset.location.address}</p>
+                  <p><ClientDate date={scannedAsset.lastScan} /></p>
+                </div>
+              </>
+            )}
+          </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-            <Link href={`/assets/${scannedAsset.id}`} className="w-full">
-              <Button variant="outline" className="w-full">
-                View Full Details
-              </Button>
-            </Link>
+          <Link href={`/assets/${scannedAsset.id}`} className="w-full">
+            <Button variant="outline" className="w-full">
+              View Full Details
+            </Button>
+          </Link>
         </CardFooter>
       </Card>
     </div>
