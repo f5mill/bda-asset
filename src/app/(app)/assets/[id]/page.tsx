@@ -141,7 +141,7 @@ export default function AssetDetailsPage({ params }: { params: { id: string } })
             </CardHeader>
             <CardContent>
               <div className="p-4 bg-white rounded-md text-black aspect-square">
-                <QrCodeSvg />
+                <QrCodeSvg path={`/assets/${asset.id}`} />
               </div>
               <p className="text-xs text-muted-foreground text-center mt-2 font-mono">{asset.qrCodeId}</p>
             </CardContent>

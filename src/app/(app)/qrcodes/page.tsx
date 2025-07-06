@@ -69,7 +69,7 @@ export default function QRCodesPage() {
                   <TableRow key={code.id}>
                     <TableCell>
                       <div className="w-10 h-10 p-1 bg-white rounded-md text-black">
-                        <QrCodeSvg />
+                        <QrCodeSvg path={`/scan?id=${code.id}`} />
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-sm">{code.id}</TableCell>
