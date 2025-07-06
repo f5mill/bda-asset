@@ -74,7 +74,7 @@ export default function Dashboard() {
               {assets.map((asset) => (
                 <TableRow key={asset.id}>
                   <TableCell>
-                    <div className="font-medium">{asset.name}</div>
+                    <Link href={`/assets/${asset.id}`} className="font-medium hover:underline">{asset.name}</Link>
                     <div className="hidden text-sm text-muted-foreground md:inline">
                       {asset.description}
                     </div>
