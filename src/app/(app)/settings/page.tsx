@@ -1,8 +1,8 @@
 
 "use client"
 
-import { useState } from "react"
-import { FileDown, PlusCircle, Search, UserPlus, MoreHorizontal, Printer, Trash2, Eye } from "lucide-react"
+import { useState, useEffect } from "react"
+import { FileDown, PlusCircle, Search, UserPlus, MoreHorizontal, Printer, Trash2, Eye, Pencil } from "lucide-react"
 
 import {
   Card,
@@ -10,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from "@/components/ui/card"
 import {
   Table,
@@ -44,6 +45,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -422,17 +430,151 @@ function QrCodeGenerationContent() {
 }
 
 function GeneralSettingsContent() {
+    type Status = {
+        id: number;
+        name: string;
+        variant: "default" | "secondary" | "destructive" | "outline";
+    };
+
+    const [statuses, setStatuses] = useState<Status[]>([
+        { id: 1, name: "Available", variant: "default" },
+        { id: 2, name: "Checked Out", variant: "secondary" },
+        { id: 3, name: "In Repair", variant: "destructive" },
+        { id: 4, name: "Booked", variant: "outline" },
+    ]);
+    const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+    const [editingStatus, setEditingStatus] = useState<Status | null>(null);
+    const [statusToDelete, setStatusToDelete] = useState<Status | null>(null);
+
+    const [newStatusName, setNewStatusName] = useState("");
+    const [newStatusVariant, setNewStatusVariant] = useState<Status['variant']>("default");
+
+    useEffect(() => {
+        if (isStatusDialogOpen) {
+            if (editingStatus) {
+                setNewStatusName(editingStatus.name);
+                setNewStatusVariant(editingStatus.variant);
+            } else {
+                setNewStatusName("");
+                setNewStatusVariant("default");
+            }
+        }
+    }, [isStatusDialogOpen, editingStatus]);
+
+    const handleSaveStatus = () => {
+        if (!newStatusName) return; // Basic validation
+        const statusData = { name: newStatusName, variant: newStatusVariant };
+        if (editingStatus) {
+            setStatuses(statuses.map(s => s.id === editingStatus.id ? { ...s, ...statusData } : s));
+        } else {
+            setStatuses([...statuses, { id: Date.now(), ...statusData }]);
+        }
+        setIsStatusDialogOpen(false);
+        setEditingStatus(null);
+    };
+
+    const handleDeleteStatus = () => {
+        if (statusToDelete) {
+            setStatuses(statuses.filter(s => s.id !== statusToDelete.id));
+            setStatusToDelete(null);
+        }
+    };
+    
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>General Settings</CardTitle>
-                <CardDescription>Manage general application settings.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <p className="text-muted-foreground">General settings will be available here.</p>
-            </CardContent>
-        </Card>
-    )
+        <div className="grid gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Workspace</CardTitle>
+                    <CardDescription>Manage general application settings.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground">General workspace settings will be available here.</p>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Status Management</CardTitle>
+                    <CardDescription>Define custom statuses for your assets.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        {statuses.map((status) => (
+                            <div key={status.id} className="flex items-center justify-between p-3 rounded-lg border bg-background">
+                                <Badge variant={status.variant}>{status.name}</Badge>
+                                <div className="flex items-center gap-1">
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { setEditingStatus(status); setIsStatusDialogOpen(true); }}>
+                                        <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => setStatusToDelete(status)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={() => { setEditingStatus(null); setIsStatusDialogOpen(true); }}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add New Status
+                    </Button>
+                </CardFooter>
+            </Card>
+
+            <Dialog open={isStatusDialogOpen} onOpenChange={(isOpen) => { if (!isOpen) setEditingStatus(null); setIsStatusDialogOpen(isOpen); }}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>{editingStatus ? 'Edit' : 'Add New'} Status</DialogTitle>
+                        <DialogDescription>
+                            {editingStatus ? 'Update the details for this status.' : 'Create a new status for your assets.'}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="status-name" className="text-right">Name</Label>
+                            <Input id="status-name" value={newStatusName} onChange={(e) => setNewStatusName(e.target.value)} className="col-span-3" placeholder="e.g. On Loan" />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="status-variant" className="text-right">Color</Label>
+                            <Select value={newStatusVariant} onValueChange={(value) => setNewStatusVariant(value as Status['variant'])}>
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue placeholder="Select a color" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="default">Orange</SelectItem>
+                                    <SelectItem value="secondary">Gray</SelectItem>
+                                    <SelectItem value="destructive">Red</SelectItem>
+                                    <SelectItem value="outline">Outline</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <DialogClose asChild>
+                           <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button onClick={handleSaveStatus}>Save Status</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <AlertDialog open={!!statusToDelete} onOpenChange={(isOpen) => !isOpen && setStatusToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently delete the status "{statusToDelete?.name}". This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteStatus}>Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
+    );
 }
 
 function BookingsSettingsContent() {
