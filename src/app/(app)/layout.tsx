@@ -12,6 +12,7 @@ import {
     CalendarDays,
     AlarmClock,
     LayoutList,
+    Boxes,
 } from "lucide-react"
 
 import {
@@ -51,6 +52,7 @@ export default function AppLayout({
         if (path === '/') return 'Dashboard'
         if (path === '/scan') return 'Scan QR Code'
         if (path === '/bookings') return 'Bookings'
+        if (path === '/pools') return 'Pools'
         if (path === '/reminders') return 'Reminders'
         if (path === '/categories') return 'Categories'
         if (path === '/tags') return 'Tags'
@@ -115,6 +117,14 @@ export default function AppLayout({
                                 <SidebarMenuButton isActive={pathname.startsWith('/categories')} tooltip="Categories">
                                     <LayoutList />
                                     Categories
+                                </SidebarMenuButton>
+                            </Link>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <Link href="/pools">
+                                <SidebarMenuButton isActive={pathname.startsWith('/pools')} tooltip="Pools">
+                                    <Boxes />
+                                    Pools
                                 </SidebarMenuButton>
                             </Link>
                         </SidebarMenuItem>
