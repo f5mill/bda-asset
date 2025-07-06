@@ -78,15 +78,13 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
               <div
                 key={booking.id}
                 className={cn(
-                  "w-full truncate text-left text-xs py-0.5",
+                  "truncate text-left text-xs py-0.5 -mx-1 px-1 w-[calc(100%_+_0.5rem)]",
                   {
                     "bg-primary text-primary-foreground": booking.status === "Active",
                     "bg-accent text-accent-foreground": booking.status === "Upcoming"
                   },
                   {
-                    // Add left rounding and padding if it's the first day of booking or first day of week (Monday)
-                    "rounded-l-sm pl-1": isStart || dayOfWeek === 1,
-                    // Add right rounding if it's the last day of booking or last day of week (Sunday)
+                    "rounded-l-sm": isStart || dayOfWeek === 1,
                     "rounded-r-sm": isEnd || dayOfWeek === 0,
                   }
                 )}
@@ -115,7 +113,7 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
             type="button"
             className={cn(
               buttonVariants({ variant: "ghost" }),
-              "relative h-full w-full flex-col items-start justify-start p-1.5 font-normal",
+              "relative h-full w-full flex-col items-start justify-start p-1 font-normal",
               isOutside && "text-muted-foreground opacity-70",
               props.className
             )}
@@ -172,7 +170,7 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
         type="button"
         className={cn(
             buttonVariants({ variant: "ghost" }),
-            "h-full w-full flex-col items-start justify-start p-1.5 font-normal",
+            "h-full w-full flex-col items-start justify-start p-1 font-normal",
             isOutside && "text-muted-foreground opacity-70",
             props.className
         )}
