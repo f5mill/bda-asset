@@ -1,4 +1,4 @@
-import { FileDown, PlusCircle, Search } from "lucide-react"
+import { FileDown, PlusCircle, Search, UserPlus, MoreHorizontal } from "lucide-react"
 
 import {
   Card,
@@ -15,6 +15,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -29,6 +35,12 @@ const generatedQRCodes = [
   { id: "QR-M7N8P9", createdAt: "2023-11-01T10:00:00Z", assignedTo: null },
   { id: "QR-Q1R2S3", createdAt: "2023-10-31T15:20:00Z", assignedTo: "ASSET-002" },
   { id: "QR-T4U5V6", createdAt: "2023-10-31T15:20:00Z", assignedTo: "ASSET-001" },
+];
+
+const pendingInvites = [
+  { id: "INV-001", email: "sara.n@example.com", sentAt: "2023-11-15T10:00:00Z", role: "Admin" },
+  { id: "INV-002", email: "john.d@example.com", sentAt: "2023-11-14T14:30:00Z", role: "Member" },
+  { id: "INV-003", email: "tech.team@example.com", sentAt: "2023-11-12T09:00:00Z", role: "Member" },
 ];
 
 function QrCodeGenerationContent() {
@@ -151,15 +163,67 @@ function BookingsSettingsContent() {
 function TeamSettingsContent() {
     return (
         <Card>
-          <CardHeader>
-            <CardTitle>Users</CardTitle>
-            <CardDescription>
-              Manage your team members and their permissions here.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">User management functionality will be implemented here.</p>
-          </CardContent>
+            <CardHeader className="flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Team Management</CardTitle>
+                    <CardDescription>
+                        Manage your team members, roles, and invites.
+                    </CardDescription>
+                </div>
+                <Button>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Invite Member
+                </Button>
+            </CardHeader>
+            <CardContent>
+                <Tabs defaultValue="users" className="w-full">
+                    <TabsList>
+                        <TabsTrigger value="users">Users</TabsTrigger>
+                        <TabsTrigger value="invites">Pending Invites</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="users" className="mt-4">
+                        <p className="text-muted-foreground">User management functionality will be implemented here.</p>
+                    </TabsContent>
+                    <TabsContent value="invites" className="mt-4">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Email</TableHead>
+                                    <TableHead>Role</TableHead>
+                                    <TableHead>Sent At</TableHead>
+                                    <TableHead><span className="sr-only">Actions</span></TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {pendingInvites.map((invite) => (
+                                    <TableRow key={invite.id}>
+                                        <TableCell className="font-medium">{invite.email}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline">{invite.role}</Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <ClientDate date={invite.sentAt} format="toLocaleDateString" />
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button size="icon" variant="ghost">
+                                                        <MoreHorizontal className="h-4 w-4" />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem>Resend Invite</DropdownMenuItem>
+                                                    <DropdownMenuItem className="text-destructive">Revoke Invite</DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TabsContent>
+                </Tabs>
+            </CardContent>
         </Card>
     )
 }
