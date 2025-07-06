@@ -6,8 +6,8 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { RefreshCw, Camera, Scan, QrCode } from "lucide-react"
 import jsQR from "jsqr"
 
-import { assets } from "@/lib/data"
-import type { Asset } from "@/lib/types"
+import { assets, users } from "@/lib/data"
+import type { Asset, User } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import {
@@ -28,7 +28,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 function ScanPageContent() {
   const router = useRouter()
@@ -48,6 +57,10 @@ function ScanPageContent() {
   const [isUpdatingLocation, setIsUpdatingLocation] = useState(false)
   const [updateError, setUpdateError] = useState<string | null>(null)
   const assetId = searchParams.get('assetId')
+
+  const [isAssignCustodyDialogOpen, setIsAssignCustodyDialogOpen] = useState(false)
+  const [assetToAssign, setAssetToAssign] = useState<Asset | null>(null)
+  const [selectedCustodianId, setSelectedCustodianId] = useState<string | null>(null)
 
   const processScan = useCallback((scannedUrl: string) => {
     try {
@@ -84,6 +97,11 @@ function ScanPageContent() {
         case 'update_location':
           router.push(`/scan?assetId=${asset.id}`)
           break
+        case 'assign_custody':
+            setAssetToAssign(asset)
+            setSelectedCustodianId(asset.custodian?.id ?? null)
+            setIsAssignCustodyDialogOpen(true)
+            break
         default:
           toast({
             title: "Action Not Implemented",
@@ -240,6 +258,28 @@ function ScanPageContent() {
     }
   }, [mode, assetId, processScan, toast])
 
+  const handleAssignCustody = () => {
+    if (!assetToAssign || !selectedCustodianId) return;
+
+    const custodian = users.find(u => u.id === selectedCustodianId);
+    if (!custodian) return;
+
+    const updatedAsset = { ...assetToAssign, custodian };
+    const assetIndex = assets.findIndex(a => a.id === assetToAssign.id);
+    if (assetIndex !== -1) {
+        assets[assetIndex] = updatedAsset;
+    }
+
+    toast({
+        title: 'Custodian Assigned',
+        description: `${custodian.name} has been assigned custody of ${assetToAssign.name}.`,
+    });
+
+    setIsAssignCustodyDialogOpen(false);
+    setAssetToAssign(null);
+    setInputValue("")
+  };
+
   if (assetId) {
     if (!scannedAsset) return <ScanPageFallback />
     return (
@@ -288,72 +328,103 @@ function ScanPageContent() {
   }
 
   return (
-    <div className="flex flex-col h-full w-full -m-4 sm:-m-6 lg:-m-8">
-      <header className="flex items-center justify-between p-2 sm:p-4 border-b">
-        <Select value={action} onValueChange={setAction}>
-          <SelectTrigger className="w-[180px] sm:w-[220px]">
-            <SelectValue placeholder="Select an action" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="update_location">Update location</SelectItem>
-            <SelectItem value="view_asset">View asset</SelectItem>
-            <SelectItem value="assign_custody" disabled>Assign custody</SelectItem>
-            <SelectItem value="release_custody" disabled>Release custody</SelectItem>
-          </SelectContent>
-        </Select>
+    <>
+      <div className="flex flex-col h-full w-full -m-4 sm:-m-6 lg:-m-8">
+        <header className="flex items-center justify-between p-2 sm:p-4 border-b">
+          <Select value={action} onValueChange={setAction}>
+            <SelectTrigger className="w-[180px] sm:w-[220px]">
+              <SelectValue placeholder="Select an action" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="update_location">Update location</SelectItem>
+              <SelectItem value="view_asset">View asset</SelectItem>
+              <SelectItem value="assign_custody">Assign custody</SelectItem>
+              <SelectItem value="release_custody" disabled>Release custody</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <div className="flex items-center gap-1 sm:gap-2">
-          <Button variant={mode === 'scanner' ? 'secondary' : 'ghost'} onClick={() => setMode('scanner')}>
-            <Scan className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Scanner</span>
-          </Button>
-          <Button variant={mode === 'camera' ? 'secondary' : 'ghost'} onClick={() => setMode('camera')}>
-            <Camera className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">Camera</span>
-          </Button>
-        </div>
-      </header>
-      
-      <main className="flex-1 flex flex-col items-center justify-center p-4 text-center bg-background">
-        {mode === 'scanner' && (
-          <div className="w-full max-w-md space-y-4">
-            <QrCode className="mx-auto h-16 w-16 text-muted-foreground" />
-            <h2 className="text-xl font-semibold">Ready to Scan</h2>
-            <p className="text-muted-foreground">Focus the field and use your barcode scanner, or paste the link below.</p>
-            <Input
-              type="text"
-              placeholder="Scan or paste asset link here..."
-              className="text-center h-12 text-base"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleInputKeyDown}
-              autoFocus
-            />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Button variant={mode === 'scanner' ? 'secondary' : 'ghost'} onClick={() => setMode('scanner')}>
+              <Scan className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Scanner</span>
+            </Button>
+            <Button variant={mode === 'camera' ? 'secondary' : 'ghost'} onClick={() => setMode('camera')}>
+              <Camera className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Camera</span>
+            </Button>
           </div>
-        )}
+        </header>
+        
+        <main className="flex-1 flex flex-col items-center justify-center p-4 text-center bg-background">
+          {mode === 'scanner' && (
+            <div className="w-full max-w-md space-y-4">
+              <QrCode className="mx-auto h-16 w-16 text-muted-foreground" />
+              <h2 className="text-xl font-semibold">Ready to Scan</h2>
+              <p className="text-muted-foreground">Focus the field and use your barcode scanner, or paste the link below.</p>
+              <Input
+                type="text"
+                placeholder="Scan or paste asset link here..."
+                className="text-center h-12 text-base"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={handleInputKeyDown}
+                autoFocus
+              />
+            </div>
+          )}
 
-        {mode === 'camera' && (
-          <div className="w-full max-w-md space-y-4">
-            <div className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center relative overflow-hidden">
-              <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
-              <canvas ref={canvasRef} className="hidden" />
-              {hasCameraPermission === null && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
-                  <RefreshCw className="h-8 w-8 animate-spin mb-2" />
-                  <p>Requesting camera...</p>
-                </div>
+          {mode === 'camera' && (
+            <div className="w-full max-w-md space-y-4">
+              <div className="aspect-video w-full rounded-lg bg-muted flex items-center justify-center relative overflow-hidden">
+                <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                <canvas ref={canvasRef} className="hidden" />
+                {hasCameraPermission === null && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
+                    <RefreshCw className="h-8 w-8 animate-spin mb-2" />
+                    <p>Requesting camera...</p>
+                  </div>
+                )}
+              </div>
+              {hasCameraPermission === false && (
+                <Alert variant="destructive">
+                  <AlertTitle>Camera Access Required</AlertTitle>
+                  <AlertDescription>Please allow camera access to use this feature.</AlertDescription>
+                </Alert>
               )}
             </div>
-            {hasCameraPermission === false && (
-              <Alert variant="destructive">
-                <AlertTitle>Camera Access Required</AlertTitle>
-                <AlertDescription>Please allow camera access to use this feature.</AlertDescription>
-              </Alert>
-            )}
-          </div>
-        )}
-      </main>
-    </div>
+          )}
+        </main>
+      </div>
+      <Dialog open={isAssignCustodyDialogOpen} onOpenChange={setIsAssignCustodyDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Assign Custody for {assetToAssign?.name}</DialogTitle>
+                <DialogDescription>
+                    Select a user to assign custody of this asset to.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                <Label htmlFor="custodian-select" className="mb-2 block">Custodian</Label>
+                <Select onValueChange={setSelectedCustodianId} defaultValue={selectedCustodianId ?? undefined}>
+                    <SelectTrigger id="custodian-select">
+                        <SelectValue placeholder="Select a user..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                                {user.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => { setIsAssignCustodyDialogOpen(false); setAssetToAssign(null); }}>Cancel</Button>
+                <Button onClick={handleAssignCustody} disabled={!selectedCustodianId}>Assign</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 
@@ -390,5 +461,3 @@ export default function ScanPage() {
         </Suspense>
     )
 }
-
-    

@@ -1,5 +1,12 @@
 
-import type { Asset, Location, Category, Booking, QRBatch } from './types';
+import type { Asset, Location, Category, Booking, QRBatch, User } from './types';
+
+export const users: User[] = [
+  { id: 'USER-101', name: 'Alice Johnson', avatarUrl: 'https://placehold.co/100x100.png' },
+  { id: 'USER-102', name: 'Bob Williams', avatarUrl: 'https://placehold.co/100x100.png' },
+  { id: 'USER-103', name: 'Charlie Brown', avatarUrl: 'https://placehold.co/100x100.png' },
+  { id: 'USER-104', name: 'Diana Prince', avatarUrl: 'https://placehold.co/100x100.png' },
+];
 
 export const categories: Category[] = [
   { id: 'CAT-001', name: 'Electronics', description: 'Laptops, monitors, and peripherals.', color: '#3b82f6' },

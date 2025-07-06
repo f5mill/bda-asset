@@ -15,6 +15,12 @@ export type Category = {
   color: string; // e.g., a hex color string
 };
 
+export type User = {
+  id: string;
+  name: string;
+  avatarUrl: string;
+};
+
 export type Asset = {
   id: string;
   name: string;
@@ -23,11 +29,7 @@ export type Asset = {
   status: AssetStatus;
   categoryId?: string;
   assignedLocation: string;
-  custodian?: {
-    id: string;
-    name: string;
-    avatarUrl: string;
-  };
+  custodian?: User;
   location: {
     lat: number;
     lng: number;

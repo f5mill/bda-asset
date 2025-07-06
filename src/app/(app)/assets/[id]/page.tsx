@@ -23,7 +23,7 @@ import {
   UserRoundPlus,
 } from "lucide-react"
 
-import { assets, bookings as initialBookings, locations, qrBatches } from "@/lib/data"
+import { assets, bookings as initialBookings, locations, qrBatches, users } from "@/lib/data"
 import { getBadgeVariant } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -58,7 +58,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import type { Asset, Booking, QRCode } from "@/lib/types"
+import type { Asset, Booking, QRCode, User } from "@/lib/types"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
@@ -79,10 +79,12 @@ export default function AssetDetailsPage() {
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [isAddToBookingDialogOpen, setIsAddToBookingDialogOpen] = useState(false);
   const [isLinkQrDialogOpen, setIsLinkQrDialogOpen] = useState(false);
+  const [isAssignCustodyDialogOpen, setIsAssignCustodyDialogOpen] = useState(false);
   const [availableQrCodes, setAvailableQrCodes] = useState<QRCode[]>([]);
   const [selectedQrCode, setSelectedQrCode] = useState<string | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [newAssignedLocation, setNewAssignedLocation] = useState("");
+  const [selectedCustodianId, setSelectedCustodianId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -310,6 +312,31 @@ export default function AssetDetailsPage() {
     setIsLinkQrDialogOpen(false);
   };
   
+  const handleAssignCustody = () => {
+    if (!asset || !selectedCustodianId) return;
+
+    const custodian = users.find(u => u.id === selectedCustodianId);
+    if (!custodian) {
+        toast({ variant: 'destructive', title: 'Error', description: 'Selected custodian not found.' });
+        return;
+    }
+    
+    const updatedAsset = { ...asset, custodian };
+    setAsset(updatedAsset);
+
+    const assetIndex = assets.findIndex(a => a.id === asset.id);
+    if (assetIndex > -1) {
+        assets[assetIndex] = updatedAsset;
+    }
+
+    toast({
+        title: "Custodian Assigned",
+        description: `${custodian.name} has been assigned custody of ${asset.name}.`,
+    });
+
+    setIsAssignCustodyDialogOpen(false);
+  };
+
   const upcomingAndActiveBookings = bookings.filter(b => b.status === 'Upcoming' || b.status === 'Active');
   
   if (isLoading) {
@@ -377,7 +404,12 @@ export default function AssetDetailsPage() {
                 <Button variant="outline">Actions</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => {
+                if(asset) {
+                    setSelectedCustodianId(asset.custodian?.id ?? null)
+                    setIsAssignCustodyDialogOpen(true)
+                }
+              }}>
                 <UserRoundPlus className="mr-2 h-4 w-4" />
                 <span>Assign custody</span>
               </DropdownMenuItem>
@@ -592,8 +624,8 @@ export default function AssetDetailsPage() {
                             <span className="font-mono">{asset.location.lat.toFixed(6)}, {asset.location.lng.toFixed(6)}</span>
                         </div>
                          <div className="flex justify-between">
-                             <span className="text-muted-foreground">Scanned by</span>
-                             <span className="font-medium">{ asset.custodian?.name || 'Unknown' }</span>
+                             <span className="text-muted-foreground">Custodian</span>
+                             <span className="font-medium">{ asset.custodian?.name || 'Unassigned' }</span>
                          </div>
                          {asset.scanDetails && (
                             <>
@@ -728,6 +760,42 @@ export default function AssetDetailsPage() {
             <DialogFooter>
                 <Button variant="outline" onClick={() => setIsLinkQrDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleLinkQrCode} disabled={!selectedQrCode || selectedQrCode === asset.qrCodeId}>Link QR Code</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isAssignCustodyDialogOpen} onOpenChange={setIsAssignCustodyDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+                <DialogTitle>Assign Custody for {asset.name}</DialogTitle>
+                <DialogDescription>
+                    Select a user to assign custody of this asset to.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="custodian" className="text-right">
+                        Custodian
+                    </Label>
+                    <Select
+                        value={selectedCustodianId ?? undefined}
+                        onValueChange={setSelectedCustodianId}
+                    >
+                        <SelectTrigger id="custodian" className="col-span-3">
+                            <SelectValue placeholder="Select a custodian" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {users.map((user) => (
+                                <SelectItem key={user.id} value={user.id}>
+                                    {user.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsAssignCustodyDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleAssignCustody} disabled={!selectedCustodianId}>Assign Custody</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
