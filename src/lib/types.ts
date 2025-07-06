@@ -13,6 +13,7 @@ export type Asset = {
   description: string;
   qrCodeId: string;
   status: AssetStatus;
+  assignedLocation: string;
   custodian?: {
     id: string;
     name: string;

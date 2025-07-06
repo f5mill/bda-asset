@@ -321,6 +321,10 @@ export default function AssetDetailsPage() {
                         <span className="text-sm text-muted-foreground">Created</span>
                          <span className="text-sm"><ClientDate date={asset.lastScan} format="toLocaleDateString" /></span>
                     </div>
+                    <div className="flex items-center justify-between border-b pb-3">
+                        <span className="text-sm text-muted-foreground">Assigned Location</span>
+                        <span className="text-sm font-medium">{asset.assignedLocation}</span>
+                    </div>
                      <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">Category</span>
                         <Badge variant="outline">Uncategorized</Badge>

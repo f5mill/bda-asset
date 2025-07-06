@@ -272,7 +272,7 @@ export default function AssetsPage() {
                             <ClientDate date={asset.lastScan} format="toLocaleDateString" />
                             </div>
                             <div className="text-sm text-muted-foreground">
-                            {asset.location.address}
+                            {asset.assignedLocation}
                             </div>
                         </TableCell>
                         <TableCell>
