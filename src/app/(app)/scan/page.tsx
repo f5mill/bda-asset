@@ -177,7 +177,16 @@ function ScanPageContent() {
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 throw new Error('Camera not supported on this browser.');
             }
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            let stream;
+            try {
+                // Prefer the rear camera
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            } catch (e) {
+                console.warn("Could not get rear camera, trying default camera.", e);
+                // Fallback to any available camera if the rear one fails
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            }
+            
             setHasCameraPermission(true);
 
             if (videoRef.current) {
