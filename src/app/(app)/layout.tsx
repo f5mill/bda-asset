@@ -1,10 +1,18 @@
+"use client"
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
     LayoutGrid,
     QrCode,
     PlusSquare,
     Bell,
     Settings,
+    Tags,
+    MapPin,
+    CalendarDays,
+    AlarmClock,
+    LayoutList,
 } from "lucide-react"
 
 import {
@@ -38,6 +46,22 @@ export default function AppLayout({
 }: {
     children: React.ReactNode
 }) {
+    const pathname = usePathname()
+
+    const getPageTitle = (path: string) => {
+        if (path === '/') return 'Dashboard'
+        if (path === '/scan') return 'Scan QR Code'
+        if (path === '/qrcodes') return 'Generate QR Codes'
+        if (path === '/bookings') return 'Bookings'
+        if (path === '/reminders') return 'Reminders'
+        if (path === '/categories') return 'Categories'
+        if (path === '/tags') return 'Tags'
+        if (path === '/locations') return 'Locations'
+        if (path.startsWith('/assets/new')) return 'Register New Asset'
+        if (path.startsWith('/assets/')) return 'Asset Details'
+        return 'Dashboard'
+    }
+
     return (
         <SidebarProvider>
             <Sidebar collapsible="icon">
@@ -49,7 +73,7 @@ export default function AppLayout({
                         <SidebarMenuItem>
                             <SidebarMenuButton
                                 href="/"
-                                isActive
+                                isActive={pathname === '/'}
                                 tooltip="Dashboard"
                             >
                                 <LayoutGrid />
@@ -57,15 +81,51 @@ export default function AppLayout({
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/scan" tooltip="Scan QR Code">
+                            <SidebarMenuButton href="/scan" isActive={pathname.startsWith('/scan')} tooltip="Scan QR Code">
                                 <QrCode />
                                 Scan QR Code
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <SidebarMenuButton href="/qrcodes" tooltip="Generate QR Codes">
+                            <SidebarMenuButton href="/qrcodes" isActive={pathname.startsWith('/qrcodes')} tooltip="Generate QR Codes">
                                 <PlusSquare />
                                 Generate QR Codes
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        
+                        <SidebarSeparator className="my-2" />
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton href="/bookings" isActive={pathname.startsWith('/bookings')} tooltip="Bookings">
+                                <CalendarDays />
+                                Bookings
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton href="/reminders" isActive={pathname.startsWith('/reminders')} tooltip="Reminders">
+                                <AlarmClock />
+                                Reminders
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
+                        <SidebarSeparator className="my-2" />
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton href="/categories" isActive={pathname.startsWith('/categories')} tooltip="Categories">
+                                <LayoutList />
+                                Categories
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton href="/tags" isActive={pathname.startsWith('/tags')} tooltip="Tags">
+                                <Tags />
+                                Tags
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton href="/locations" isActive={pathname.startsWith('/locations')} tooltip="Locations">
+                                <MapPin />
+                                Locations
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
@@ -113,7 +173,7 @@ export default function AppLayout({
                 <header className="flex items-center justify-between p-4 border-b">
                     <div className="flex items-center gap-2">
                          <SidebarTrigger />
-                         <h1 className="text-lg font-semibold font-headline">Dashboard</h1>
+                         <h1 className="text-lg font-semibold font-headline">{getPageTitle(pathname)}</h1>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="ghost" size="icon">
