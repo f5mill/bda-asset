@@ -357,25 +357,49 @@ export default function AssetDetailsPage() {
                 </CardContent>
             </Card>
             <Card>
+                <CardHeader>
+                    <CardTitle className="text-base font-semibold">Last Scan Details</CardTitle>
+                </CardHeader>
                 <CardContent className="p-0">
-                    <div className="h-48 w-full rounded-t-md overflow-hidden bg-muted">
-                        <Image
-                        src="https://placehold.co/350x192.png"
-                        alt="Map of asset location"
-                        width={350}
-                        height={192}
-                        className="object-cover w-full h-full"
-                        data-ai-hint="map"
-                        />
+                    <div className="h-48 w-full rounded-t-lg overflow-hidden bg-muted">
+                        {asset.location.lat && asset.location.lng ? (
+                            <Image
+                                src={`https://api.maptiler.com/maps/streets-v2/static/${asset.location.lng},${asset.location.lat},14/350x192.png?key=GET_YOUR_OWN_KEY_AT_MAPTILER_COM`}
+                                alt="Map of asset location"
+                                width={350}
+                                height={192}
+                                className="object-cover w-full h-full"
+                                data-ai-hint="map"
+                                key={`${asset.location.lat}-${asset.location.lng}`}
+                            />
+                        ) : (
+                            <Image
+                                src="https://placehold.co/350x192.png"
+                                alt="Map of asset location"
+                                width={350}
+                                height={192}
+                                className="object-cover w-full h-full"
+                                data-ai-hint="map"
+                            />
+                        )}
                     </div>
                     <div className="p-4 space-y-2 text-sm">
-                        <div className="flex justify-between"><span className="text-muted-foreground">Date/Time</span> <ClientDate date={asset.lastScan} /></div>
-                        <div className="flex justify-between"><span className="text-muted-foreground">Coordinates</span> <span className="font-mono">{asset.location.lat.toFixed(6)}, {asset.location.lng.toFixed(6)}</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">Device</span> <span>Apple iPhone</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">Browser</span> <span>Mobile Safari</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">OS</span> <span>iOS</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">Scanned by</span> <span>{ asset.custodian?.name || 'Unknown' }</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">Source</span> <span>QR code scan</span></div>
+                        <div className="flex justify-between items-start gap-2">
+                            <span className="text-muted-foreground flex-shrink-0">Location</span>
+                            <span className="text-right font-medium">{asset.location.address}</span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Date/Time</span>
+                            <span className="font-medium"><ClientDate date={asset.lastScan} /></span>
+                        </div>
+                        <div className="flex justify-between">
+                            <span className="text-muted-foreground">Coordinates</span> 
+                            <span className="font-mono">{asset.location.lat.toFixed(6)}, {asset.location.lng.toFixed(6)}</span>
+                        </div>
+                         <div className="flex justify-between">
+                             <span className="text-muted-foreground">Scanned by</span>
+                             <span className="font-medium">{ asset.custodian?.name || 'Unknown' }</span>
+                         </div>
                     </div>
                 </CardContent>
                 <CardFooter>
@@ -392,5 +416,3 @@ export default function AssetDetailsPage() {
     </div>
   )
 }
-
-    
