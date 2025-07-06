@@ -1,5 +1,12 @@
 export type AssetStatus = "Available" | "Checked Out" | "In Repair" | "Booked";
 
+export type ScanDetails = {
+  device?: string;
+  browser?: string;
+  os?: string;
+  source?: string;
+};
+
 export type Asset = {
   id: string;
   name: string;
@@ -17,6 +24,7 @@ export type Asset = {
     address: string;
   };
   lastScan: string; // ISO date string
+  scanDetails?: ScanDetails;
 };
 
 export type UnclaimedQRCode = {

@@ -69,6 +69,27 @@ export default function AssetDetailsPage() {
     }
     setIsLoading(false);
   }, [params.id])
+
+  const parseUserAgent = (ua: string) => {
+    let browser = 'Unknown';
+    let os = 'Unknown';
+    let device = 'Desktop';
+
+    if (/windows/i.test(ua)) os = 'Windows';
+    else if (/macintosh|mac os x/i.test(ua)) os = 'macOS';
+    else if (/android/i.test(ua)) os = 'Android';
+    else if (/iphone|ipad|ipod/i.test(ua)) os = 'iOS';
+    else if (/linux/i.test(ua)) os = 'Linux';
+
+    if (/edg/i.test(ua)) browser = 'Edge';
+    else if (/chrome/i.test(ua) && !/chromium/i.test(ua)) browser = 'Chrome';
+    else if (/firefox/i.test(ua)) browser = 'Firefox';
+    else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Safari';
+    
+    if (/mobi/i.test(ua)) device = 'Mobile';
+
+    return { browser, os, device };
+  }
   
   const handleUpdateGps = () => {
     setIsProcessing(true);
@@ -86,6 +107,8 @@ export default function AssetDetailsPage() {
     const onSuccess = async (position: GeolocationPosition) => {
       try {
         const { latitude, longitude } = position.coords;
+        const deviceInfo = parseUserAgent(navigator.userAgent);
+
         const response = await fetch(
           `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
         );
@@ -109,6 +132,10 @@ export default function AssetDetailsPage() {
               address: newLocation,
             },
             lastScan: new Date().toISOString(),
+            scanDetails: {
+              ...deviceInfo,
+              source: 'GPS Update'
+            }
           };
         });
 
@@ -221,10 +248,6 @@ export default function AssetDetailsPage() {
               <DropdownMenuItem>
                 <UserRoundPlus className="mr-2 h-4 w-4" />
                 <span>Assign custody</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <MapPin className="mr-2 h-4 w-4" />
-                <span>Update location</span>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleUpdateGps} disabled={isProcessing}>
                 <Crosshair className="mr-2 h-4 w-4" />
@@ -400,6 +423,27 @@ export default function AssetDetailsPage() {
                              <span className="text-muted-foreground">Scanned by</span>
                              <span className="font-medium">{ asset.custodian?.name || 'Unknown' }</span>
                          </div>
+                         {asset.scanDetails && (
+                            <>
+                                <Separator className="my-2" />
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Device</span>
+                                    <span className="font-medium">{asset.scanDetails.device}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">OS</span>
+                                    <span className="font-medium">{asset.scanDetails.os}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Browser</span>
+                                    <span className="font-medium">{asset.scanDetails.browser}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Source</span>
+                                    <span className="font-medium">{asset.scanDetails.source}</span>
+                                </div>
+                            </>
+                         )}
                     </div>
                 </CardContent>
                 <CardFooter>

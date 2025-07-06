@@ -18,6 +18,12 @@ export const assets: Asset[] = [
       address: 'Floor 5, Desk 21, Los Angeles Office',
     },
     lastScan: '2023-10-26T10:00:00Z',
+    scanDetails: {
+      device: 'Desktop',
+      browser: 'Chrome',
+      os: 'macOS',
+      source: 'Manual Entry'
+    }
   },
   {
     id: 'ASSET-002',
@@ -31,6 +37,12 @@ export const assets: Asset[] = [
       address: 'Storage Room B, New York Office',
     },
     lastScan: '2023-09-15T14:30:00Z',
+    scanDetails: {
+      device: 'Desktop',
+      browser: 'Firefox',
+      os: 'Windows',
+      source: 'Initial Import'
+    }
   },
   {
     id: 'ASSET-003',
@@ -44,6 +56,12 @@ export const assets: Asset[] = [
       address: 'Marketing Dept, London Office',
     },
     lastScan: '2023-10-20T09:00:00Z',
+     scanDetails: {
+      device: 'Mobile',
+      browser: 'Safari',
+      os: 'iOS',
+      source: 'QR Code Scan'
+    }
   },
   {
     id: 'ASSET-004',
@@ -57,6 +75,12 @@ export const assets: Asset[] = [
       address: 'IT Department, Tokyo Office',
     },
     lastScan: '2023-10-22T11:20:00Z',
+    scanDetails: {
+      device: 'Desktop',
+      browser: 'Edge',
+      os: 'Windows',
+      source: 'Manual Entry'
+    }
   },
   {
     id: 'ASSET-005',
@@ -70,5 +94,11 @@ export const assets: Asset[] = [
       address: 'Parking Garage, Level 2, Sydney Office',
     },
     lastScan: '2023-10-25T18:05:00Z',
+    scanDetails: {
+      device: 'Mobile',
+      browser: 'Chrome',
+      os: 'Android',
+      source: 'QR Code Scan'
+    }
   },
 ];
