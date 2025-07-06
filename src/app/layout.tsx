@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 export const metadata: Metadata = {
   title: 'Asset Hound',
   description: 'Track and manage your assets with ease.',
+  manifest: '/manifest.json',
+  themeColor: '#2d3033',
 };
 
 export default function RootLayout({
