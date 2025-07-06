@@ -107,10 +107,6 @@ export default function NewAssetPage() {
                   </Select>
                 </div>
               </div>
-              <div className="grid gap-3">
-                <Label htmlFor="tags">Tags</Label>
-                <Input id="tags" placeholder="e.g. laptop, finance, high-value" />
-              </div>
             </div>
           </CardContent>
         </Card>

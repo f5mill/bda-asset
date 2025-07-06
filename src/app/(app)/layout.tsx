@@ -9,7 +9,6 @@ import {
     QrCode,
     Bell,
     Settings,
-    Tags,
     MapPin,
     CalendarDays,
     AlarmClock,
@@ -64,7 +63,6 @@ export default function AppLayout({
             if (path === '/pools') return 'Pools'
             if (path === '/reminders') return 'Reminders'
             if (path === '/categories') return 'Categories'
-            if (path === '/tags') return 'Tags'
             if (path.startsWith('/locations/')) return 'Location Details'
             if (path === '/locations') return 'Locations'
             if (path.startsWith('/settings')) return 'Settings'
@@ -168,18 +166,6 @@ export default function AppLayout({
                                 <Link href="/pools">
                                     <Boxes />
                                     Pools
-                                </Link>
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                             <SidebarMenuButton 
-                                isActive={pathname.startsWith('/tags')} 
-                                tooltip="Tags"
-                                asChild
-                            >
-                                <Link href="/tags">
-                                    <Tags />
-                                    Tags
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
