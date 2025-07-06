@@ -1,4 +1,4 @@
-import type { Asset, Location, Category } from './types';
+import type { Asset, Location, Category, Booking } from './types';
 
 export const categories: Category[] = [
   { id: 'CAT-001', name: 'Electronics', description: 'Laptops, monitors, and peripherals.', color: '#3b82f6' },
@@ -118,6 +118,52 @@ export const assets: Asset[] = [
       source: 'QR Code Scan'
     }
   },
+];
+
+export const bookings: Booking[] = [
+  {
+    id: 'BOOK-001',
+    assetIds: ['ASSET-003'],
+    bookedBy: 'Marketing Team',
+    startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'Upcoming',
+    notes: 'For the upcoming product launch photoshoot.'
+  },
+  {
+    id: 'BOOK-002',
+    assetIds: ['ASSET-001'],
+    bookedBy: 'Alice Johnson',
+    startDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    endDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+    status: 'Active',
+  },
+  {
+    id: 'BOOK-003',
+    assetIds: ['ASSET-004', 'ASSET-002'],
+    bookedBy: 'IT Support',
+    startDate: '2023-10-10T09:00:00Z',
+    endDate: '2023-10-12T17:00:00Z',
+    status: 'Completed',
+    notes: 'Internal tech fair setup.'
+  },
+  {
+    id: 'BOOK-004',
+    assetIds: ['ASSET-005'],
+    bookedBy: 'Logistics Dept',
+    startDate: '2023-09-01T08:00:00Z',
+    endDate: '2023-09-05T18:00:00Z',
+    status: 'Completed',
+  },
+   {
+    id: 'BOOK-005',
+    assetIds: ['ASSET-002'],
+    bookedBy: 'Alex Smith',
+    startDate: '2023-08-15T09:00:00Z',
+    endDate: '2023-08-16T17:00:00Z',
+    status: 'Cancelled',
+    notes: 'Project requirements changed.'
+  }
 ];
 
 export const locations: Location[] = [
