@@ -112,6 +112,7 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
                 <Copy className="mr-2 h-4 w-4" />
                 <span>Duplicate</span>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive">
                 <Trash2 className="mr-2 h-4 w-4" />
                 <span>Delete</span>
