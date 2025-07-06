@@ -1,7 +1,7 @@
+
 import Link from "next/link"
 import {
   ChevronLeft,
-  PlusCircle,
   Upload,
 } from "lucide-react"
 
@@ -74,6 +74,63 @@ export default function NewAssetPage() {
                   className="min-h-32"
                 />
               </div>
+               <div className="grid grid-cols-2 gap-6">
+                <div className="grid gap-3">
+                  <Label htmlFor="category">Category</Label>
+                  <Select>
+                    <SelectTrigger id="category" aria-label="Select category">
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="electronics">Electronics</SelectItem>
+                      <SelectItem value="furniture">Furniture</SelectItem>
+                      <SelectItem value="vehicles">Vehicles</SelectItem>
+                      <SelectItem value="equipment">Equipment</SelectItem>
+                      <SelectItem value="uncategorized">Uncategorized</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-3">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    type="text"
+                    className="w-full"
+                    placeholder="e.g. Floor 5, LA Office"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-3">
+                <Label htmlFor="tags">Tags</Label>
+                <Input id="tags" placeholder="e.g. laptop, finance, high-value" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Asset Image</CardTitle>
+            <CardDescription>
+              Upload a picture of the asset.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+             <div className="flex flex-col items-center justify-center w-full gap-4">
+                <div className="flex items-center justify-center w-full h-32 border-2 border-dashed rounded-lg bg-card">
+                    <div className="flex flex-col items-center justify-center text-center">
+                        <Upload className="w-8 h-8 text-muted-foreground" />
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            Image preview will appear here
+                        </p>
+                    </div>
+                </div>
+                <Button asChild variant="outline" className="w-full cursor-pointer">
+                    <label htmlFor="file-upload">
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Image
+                        <input id="file-upload" name="file-upload" type="file" className="sr-only" />
+                    </label>
+                </Button>
             </div>
           </CardContent>
         </Card>
