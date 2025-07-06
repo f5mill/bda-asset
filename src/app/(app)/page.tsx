@@ -40,6 +40,7 @@ import { getBadgeVariant } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MoreVertical } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const totalInventoryChartData = [
   { date: "AUG", total: 0 },
@@ -59,6 +60,11 @@ const totalInventoryChartConfig = {
 
 
 export default function Dashboard() {
+  const [isClient, setIsClient] = React.useState(false)
+  React.useEffect(() => {
+    setIsClient(true)
+  }, [])
+  
   const totalAssets = assets.length
   
   const statusCounts = assets.reduce((acc, asset) => {
@@ -141,34 +147,38 @@ export default function Dashboard() {
                     <MoreVertical className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-6">
-                    <div className="relative h-40 w-40">
-                        <PieChart width={160} height={160}>
-                            <Pie
-                                data={assetsByStatusData}
-                                cx={80}
-                                cy={80}
-                                innerRadius={60}
-                                outerRadius={80}
-                                dataKey="count"
-                                strokeWidth={0}
-                            >
-                                {assetsByStatusData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                                ))}
-                                <Label
-                                    content={({ viewBox }) => {
-                                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                                            return (
-                                            <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle" className="fill-foreground text-2xl font-bold">
-                                                {totalAssets}
-                                            </text>
-                                            )
-                                        }
-                                    }}
-                                />
-                            </Pie>
-                        </PieChart>
-                    </div>
+                    {isClient ? (
+                        <div className="relative h-40 w-40">
+                            <PieChart width={160} height={160}>
+                                <Pie
+                                    data={assetsByStatusData}
+                                    cx={80}
+                                    cy={80}
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    dataKey="count"
+                                    strokeWidth={0}
+                                >
+                                    {assetsByStatusData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                                    ))}
+                                    <Label
+                                        content={({ viewBox }) => {
+                                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                                                return (
+                                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle" className="fill-foreground text-2xl font-bold">
+                                                    {totalAssets}
+                                                </text>
+                                                )
+                                            }
+                                        }}
+                                    />
+                                </Pie>
+                            </PieChart>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-40 w-40 rounded-full" />
+                    )}
                 </CardContent>
                 <CardFooter>
                     <div className="w-full space-y-2 text-sm">
@@ -233,34 +243,38 @@ export default function Dashboard() {
                     <Link href="/categories"><Button variant="link" size="sm" className="h-auto p-0">See all</Button></Link>
                 </CardHeader>
                 <CardContent className="flex items-center justify-center p-6">
-                    <div className="relative h-40 w-40">
-                         <PieChart width={160} height={160}>
-                            <Pie
-                                data={assetsByCategoryData}
-                                cx={80}
-                                cy={80}
-                                innerRadius={60}
-                                outerRadius={80}
-                                dataKey="count"
-                                strokeWidth={0}
-                            >
-                                {assetsByCategoryData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                                ))}
-                                <Label
-                                    content={({ viewBox }) => {
-                                        if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                                            return (
-                                            <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle" className="fill-foreground text-2xl font-bold">
-                                                {totalAssets}
-                                            </text>
-                                            )
-                                        }
-                                    }}
-                                />
-                            </Pie>
-                        </PieChart>
-                    </div>
+                    {isClient ? (
+                        <div className="relative h-40 w-40">
+                             <PieChart width={160} height={160}>
+                                <Pie
+                                    data={assetsByCategoryData}
+                                    cx={80}
+                                    cy={80}
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    dataKey="count"
+                                    strokeWidth={0}
+                                >
+                                    {assetsByCategoryData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                                    ))}
+                                    <Label
+                                        content={({ viewBox }) => {
+                                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                                                return (
+                                                <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle" className="fill-foreground text-2xl font-bold">
+                                                    {totalAssets}
+                                                </text>
+                                                )
+                                            }
+                                        }}
+                                    />
+                                </Pie>
+                            </PieChart>
+                        </div>
+                    ) : (
+                        <Skeleton className="h-40 w-40 rounded-full" />
+                    )}
                 </CardContent>
                 <CardFooter>
                     <div className="w-full space-y-2 text-sm">
