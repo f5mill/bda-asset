@@ -45,91 +45,90 @@ export default function ScanPage() {
     }
   }, [searchParams, toast])
 
-  const handleUpdateLocation = async () => {
+  const handleUpdateLocation = () => {
     setIsProcessing(true);
-    
+
     if (!navigator.geolocation) {
       toast({
-        variant: "destructive",
-        title: "Geolocation not supported",
-        description: "Your browser does not support geolocation.",
+        variant: 'destructive',
+        title: 'Geolocation not supported',
+        description: 'Your browser does not support geolocation.',
       });
       setIsProcessing(false);
       return;
     }
 
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 10000, // 10 seconds
-            maximumAge: 0,
-        });
-      });
-
-      const { latitude, longitude } = position.coords;
-      
-      const response = await fetch(`https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch address from geocoding service.');
-      }
-      const data = await response.json();
-      
-      const newLocation = data.display_name || `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
-
-      if (scannedAsset) {
-        // This only updates the state locally. A real app would send this to a server.
-        setScannedAsset(prevAsset => {
-          if (!prevAsset) return null;
-          return {
-            ...prevAsset,
-            location: {
-              ...prevAsset.location,
-              lat: latitude,
-              lng: longitude,
-              address: newLocation,
-            },
-            lastScan: new Date().toISOString(),
-          };
-        });
-        setUpdatedLocation(newLocation);
-      }
-
-      toast({
-        title: "Location Updated",
-        description: `Asset location has been updated to your current position.`,
-      });
-
-    } catch (error: any) {
-      let title = "An error occurred";
-      let description = "Could not update location.";
-
-      if (error.code) {
-        title = "Geolocation Error";
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            description = "You denied the request for Geolocation.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            description = "Location information is unavailable.";
-            break;
-          case error.TIMEOUT:
-            description = "The request to get user location timed out.";
-            break;
+    const onSuccess = async (position: GeolocationPosition) => {
+      try {
+        const { latitude, longitude } = position.coords;
+        // Using a different, reliable geocoding service
+        const response = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch address from geocoding service.');
         }
-      } else if (error.message) {
-          description = error.message
+        const data = await response.json();
+        const newLocation = data.locality && data.principalSubdivision 
+            ? `${data.locality}, ${data.principalSubdivision}` 
+            : `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+
+        if (scannedAsset) {
+          setScannedAsset((prevAsset) => {
+            if (!prevAsset) return null;
+            return {
+              ...prevAsset,
+              location: {
+                ...prevAsset.location,
+                lat: latitude,
+                lng: longitude,
+                address: newLocation,
+              },
+              lastScan: new Date().toISOString(),
+            };
+          });
+          setUpdatedLocation(newLocation);
+        }
+
+        toast({
+          title: 'Location Updated',
+          description: `Asset location has been updated to: ${newLocation}`,
+        });
+      } catch (apiError: any) {
+        toast({
+          variant: 'destructive',
+          title: 'Geocoding Error',
+          description: apiError.message || 'Could not fetch address data.',
+        });
+      } finally {
+        setIsProcessing(false);
       }
-      
-      toast({
-        variant: "destructive",
-        title: title,
-        description: description,
-      });
-      console.error(error);
-    } finally {
+    };
+
+    const onError = (error: GeolocationPositionError) => {
+      let title = 'Geolocation Error';
+      let description = 'Could not get your location.';
+
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          description = 'You denied the request for Geolocation.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          description = 'Location information is unavailable.';
+          break;
+        case error.TIMEOUT:
+          description = 'The request to get user location timed out.';
+          break;
+      }
+      toast({ variant: 'destructive', title, description });
       setIsProcessing(false);
-    }
+    };
+
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    });
   };
 
   if (!assetId) {
