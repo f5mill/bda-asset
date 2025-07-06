@@ -1,3 +1,4 @@
+
 "use client"
 import { useState, useEffect } from "react"
 import Link from "next/link"
@@ -46,7 +47,7 @@ export default function ScanPage() {
 
   const handleUpdateLocation = () => {
     setIsProcessing(true)
-    
+
     if (!navigator.geolocation) {
       toast({
         variant: "destructive",
@@ -58,34 +59,50 @@ export default function ScanPage() {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords
-        // In a real app, you would use a geocoding service to get an address.
-        const newLocation = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
-        
-        if (scannedAsset) {
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords
+          
+          const response = await fetch(`https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch address from geocoding service.');
+          }
+          const data = await response.json();
+          
+          const newLocation = data.display_name || `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+
+          if (scannedAsset) {
             // This only updates the state locally. A real app would send this to a server.
             setScannedAsset(prevAsset => {
-                if (!prevAsset) return null;
-                return {
-                    ...prevAsset,
-                    location: {
-                        ...prevAsset.location,
-                        lat: latitude,
-                        lng: longitude,
-                        address: newLocation,
-                    },
-                    lastScan: new Date().toISOString(),
-                }
+              if (!prevAsset) return null
+              return {
+                ...prevAsset,
+                location: {
+                  ...prevAsset.location,
+                  lat: latitude,
+                  lng: longitude,
+                  address: newLocation,
+                },
+                lastScan: new Date().toISOString(),
+              }
             })
-            setUpdatedLocation(newLocation);
-        }
+            setUpdatedLocation(newLocation)
+          }
 
-        toast({
-          title: "Location Updated",
-          description: `Asset location has been updated to your current position.`,
-        })
-        setIsProcessing(false)
+          toast({
+            title: "Location Updated",
+            description: `Asset location has been updated to your current position.`,
+          })
+        } catch (error) {
+          console.error(error);
+          toast({
+            variant: "destructive",
+            title: "Could not get address",
+            description: "Failed to retrieve a street address for your current location.",
+          })
+        } finally {
+          setIsProcessing(false)
+        }
       },
       (error) => {
         toast({
