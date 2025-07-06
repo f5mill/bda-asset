@@ -394,6 +394,10 @@ export default function AssetDetailsPage() {
                                 className="object-cover w-full h-full"
                                 data-ai-hint="map"
                                 key={`${asset.location.lat}-${asset.location.lng}`}
+                                onError={(e) => {
+                                    e.currentTarget.onerror = null; // prevents looping
+                                    e.currentTarget.src = "https://placehold.co/350x192.png";
+                                }}
                             />
                         ) : (
                             <Image
