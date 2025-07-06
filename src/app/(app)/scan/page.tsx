@@ -1,8 +1,12 @@
 "use client"
-import { useState } from "react"
-import { Camera, RefreshCw, X } from "lucide-react"
-import Image from "next/image"
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
+import { Camera, MapPin } from "lucide-react"
 
+import { assets } from "@/lib/data"
+import type { Asset } from "@/lib/types"
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -14,86 +18,159 @@ import {
 } from "@/components/ui/card"
 
 export default function ScanPage() {
-  const [isScanning, setIsScanning] = useState(false)
-  const [scannedAsset, setScannedAsset] = useState<any>(null)
+  const searchParams = useSearchParams()
+  const { toast } = useToast()
+  
+  const [assetId, setAssetId] = useState<string | null>(null)
+  const [scannedAsset, setScannedAsset] = useState<Asset | null>(null)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [updatedLocation, setUpdatedLocation] = useState<string | null>(null)
 
-  const handleScan = () => {
-    setIsScanning(true)
-    // Simulate scanning
-    setTimeout(() => {
-      setScannedAsset({
-        id: "ASSET-001",
-        name: 'MacBook Pro 16"',
-        description: "M2 Max, 64GB RAM, 2TB SSD. For engineering team.",
-        status: "Checked Out",
-        custodian: "Alice Johnson",
+  useEffect(() => {
+    const id = searchParams.get('assetId')
+    if (id) {
+      setAssetId(id)
+      const assetData = assets.find((a) => a.id === id)
+      if (assetData) {
+        setScannedAsset(JSON.parse(JSON.stringify(assetData))) // Deep copy to allow modification
+      } else {
+        setScannedAsset(null)
+        toast({
+          variant: "destructive",
+          title: "Asset not found",
+          description: `No asset with ID ${id} exists.`,
+        })
+      }
+    }
+  }, [searchParams, toast])
+
+  const handleUpdateLocation = () => {
+    setIsProcessing(true)
+    
+    if (!navigator.geolocation) {
+      toast({
+        variant: "destructive",
+        title: "Geolocation not supported",
+        description: "Your browser does not support geolocation.",
       })
-      setIsScanning(false)
-    }, 2000)
+      setIsProcessing(false)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        // In a real app, you would use a geocoding service to get an address.
+        const newLocation = `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`
+        
+        if (scannedAsset) {
+            // This only updates the state locally. A real app would send this to a server.
+            setScannedAsset(prevAsset => {
+                if (!prevAsset) return null;
+                return {
+                    ...prevAsset,
+                    location: {
+                        ...prevAsset.location,
+                        lat: latitude,
+                        lng: longitude,
+                        address: newLocation,
+                    },
+                    lastScan: new Date().toISOString(),
+                }
+            })
+            setUpdatedLocation(newLocation);
+        }
+
+        toast({
+          title: "Location Updated",
+          description: `Asset location has been updated to your current position.`,
+        })
+        setIsProcessing(false)
+      },
+      (error) => {
+        toast({
+          variant: "destructive",
+          title: "Geolocation Error",
+          description: error.message,
+        })
+        setIsProcessing(false)
+      }
+    )
   }
 
-  const handleReset = () => {
-    setScannedAsset(null)
+  if (!assetId) {
+    return (
+        <div className="flex justify-center items-center h-full">
+            <Card className="w-full max-w-md">
+                <CardHeader className="text-center">
+                <CardTitle className="font-headline text-2xl">Scan Asset QR Code</CardTitle>
+                <CardDescription>
+                    Point your device's camera at an asset's QR code.
+                </CardDescription>
+                </CardHeader>
+                <CardContent>
+                <div className="aspect-square w-full rounded-lg bg-muted flex items-center justify-center relative overflow-hidden">
+                    <Camera className="h-24 w-24 text-muted-foreground" />
+                </div>
+                </CardContent>
+                 <CardFooter>
+                    <p className="text-sm text-muted-foreground text-center w-full">This is a simulation. To test, scan a QR code from an asset's detail page or append `?assetId=...` to the URL.</p>
+                </CardFooter>
+            </Card>
+        </div>
+    )
   }
+
+  if (!scannedAsset) {
+      return (
+        <div className="flex justify-center items-center h-full">
+            <Card className="w-full max-w-md text-center">
+                <CardHeader>
+                    <CardTitle className="font-headline text-2xl">Asset Not Found</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p>The asset ID provided in the URL does not exist.</p>
+                </CardContent>
+                <CardFooter>
+                    <Link href="/" className="w-full">
+                        <Button variant="outline" className="w-full">Back to Dashboard</Button>
+                    </Link>
+                </CardFooter>
+            </Card>
+        </div>
+      )
+  }
+
 
   return (
     <div className="flex justify-center items-center h-full">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="font-headline text-2xl">Scan Asset QR Code</CardTitle>
+          <CardTitle className="font-headline text-2xl">{scannedAsset.name}</CardTitle>
           <CardDescription>
-            Point your camera at a QR code to identify an asset.
+            {scannedAsset.description}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="aspect-square w-full rounded-lg bg-muted flex items-center justify-center relative overflow-hidden">
-            {!scannedAsset ? (
-              <>
-                <Camera className="h-24 w-24 text-muted-foreground" />
-                {isScanning && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <div className="w-64 h-1 bg-primary/50 rounded-full overflow-hidden">
-                      <div className="h-full bg-accent animate-scan-beam"></div>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : (
-                <div className="p-6 text-center">
-                    <h3 className="text-xl font-bold font-headline text-accent">{scannedAsset.name}</h3>
-                    <p className="text-muted-foreground mt-2">{scannedAsset.description}</p>
-                    <p className="mt-4"><span className="font-semibold">Status:</span> {scannedAsset.status}</p>
-                    <p><span className="font-semibold">Custodian:</span> {scannedAsset.custodian}</p>
-                </div>
-            )}
-            <style jsx>{`
-              @keyframes scan-beam-anim {
-                0% { transform: translateX(-100%); }
-                100% { transform: translateX(100%); }
-              }
-              .animate-scan-beam {
-                animation: scan-beam-anim 1.5s ease-in-out infinite;
-              }
-            `}</style>
-          </div>
+            <div className="p-4 text-center border rounded-lg space-y-2">
+                <p><span className="font-semibold">Status:</span> {scannedAsset.status}</p>
+                <p><span className="font-semibold">Custodian:</span> {scannedAsset.custodian?.name || 'N/A'}</p>
+                <p className="text-sm text-muted-foreground pt-2">
+                    <span className="font-semibold">Last known location:</span><br/>
+                    {updatedLocation || scannedAsset.location.address}
+                </p>
+            </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          {!scannedAsset ? (
-            <Button onClick={handleScan} disabled={isScanning} className="w-full">
-              <Camera className="mr-2 h-4 w-4" />
-              {isScanning ? "Scanning..." : "Start Scan"}
+            <Button onClick={handleUpdateLocation} disabled={isProcessing} className="w-full">
+                <MapPin className="mr-2 h-4 w-4" />
+                {isProcessing ? "Updating..." : "Update Location"}
             </Button>
-          ) : (
-            <>
-              <Button onClick={handleReset} className="w-full">
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Scan Another Asset
-              </Button>
+            <Link href={`/assets/${scannedAsset.id}`} className="w-full">
               <Button variant="outline" className="w-full">
                 View Full Details
               </Button>
-            </>
-          )}
+            </Link>
         </CardFooter>
       </Card>
     </div>

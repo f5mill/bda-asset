@@ -141,7 +141,7 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
             </CardHeader>
             <CardContent>
               <div className="p-4 bg-white rounded-md text-black aspect-square">
-                <QrCodeSvg path={`/assets/${asset.id}`} />
+                <QrCodeSvg path={`/scan?assetId=${asset.id}`} />
               </div>
               <p className="text-xs text-muted-foreground text-center mt-2 font-mono">{asset.qrCodeId}</p>
             </CardContent>
