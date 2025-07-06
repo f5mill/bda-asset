@@ -1,3 +1,4 @@
+
 "use client"
 
 import Link from "next/link"
@@ -234,10 +235,10 @@ export default function AppLayout({
                 <header className="flex items-center justify-between p-4 border-b">
                     <div className="flex items-center gap-2">
                          <SidebarTrigger />
-                         <h1 className="text-lg font-semibold font-headline">{getPageTitle(pathname)}</h1>
+                         <h1 className="text-base sm:text-lg font-semibold font-headline truncate">{getPageTitle(pathname)}</h1>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
                             <Bell className="h-5 w-5" />
                         </Button>
                         <ThemeToggle />

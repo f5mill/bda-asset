@@ -218,13 +218,13 @@ export default function AssetsPage() {
                             {getSortIcon('status')}
                         </Button>
                     </TableHead>
-                    <TableHead>
+                    <TableHead className="hidden md:table-cell">
                         <Button variant="ghost" onClick={() => requestSort('custodian')}>
                             Custodian
                             {getSortIcon('custodian')}
                         </Button>
                     </TableHead>
-                    <TableHead>
+                    <TableHead className="hidden sm:table-cell">
                         <Button variant="ghost" onClick={() => requestSort('lastScan')}>
                             Last Scan
                             {getSortIcon('lastScan')}
@@ -254,7 +254,7 @@ export default function AssetsPage() {
                             {asset.status}
                             </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden md:table-cell">
                             {asset.custodian ? (
                             <div className="flex items-center gap-2">
                                 <Avatar className="h-8 w-8">
@@ -267,7 +267,7 @@ export default function AssetsPage() {
                             <span className="text-muted-foreground">N/A</span>
                             )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden sm:table-cell">
                             <div className="font-medium">
                             <ClientDate date={asset.lastScan} format="toLocaleDateString" />
                             </div>

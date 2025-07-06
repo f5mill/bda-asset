@@ -55,9 +55,9 @@ function BookingsTable({ bookings }: { bookings: Booking[] }) {
         <TableRow>
           <TableHead>Purpose</TableHead>
           <TableHead>Asset(s)</TableHead>
-          <TableHead>Booked By</TableHead>
-          <TableHead>Start Date</TableHead>
-          <TableHead>End Date</TableHead>
+          <TableHead className="hidden lg:table-cell">Booked By</TableHead>
+          <TableHead className="hidden md:table-cell">Start Date</TableHead>
+          <TableHead className="hidden sm:table-cell">End Date</TableHead>
           <TableHead>Status</TableHead>
           <TableHead><span className="sr-only">Actions</span></TableHead>
         </TableRow>
@@ -81,11 +81,11 @@ function BookingsTable({ bookings }: { bookings: Booking[] }) {
                   {bookedAssets.length === 0 && <span className="text-muted-foreground text-sm">Asset not found</span>}
                 </div>
               </TableCell>
-              <TableCell className="text-muted-foreground">{booking.bookedBy}</TableCell>
-              <TableCell>
+              <TableCell className="text-muted-foreground hidden lg:table-cell">{booking.bookedBy}</TableCell>
+              <TableCell className="hidden md:table-cell">
                 <ClientDate date={booking.startDate} />
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden sm:table-cell">
                 <ClientDate date={booking.endDate} />
               </TableCell>
               <TableCell>

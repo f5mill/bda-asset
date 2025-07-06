@@ -75,7 +75,7 @@ export default function NewAssetPage() {
                   className="min-h-32"
                 />
               </div>
-               <div className="grid grid-cols-2 gap-6">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="grid gap-3">
                   <Label htmlFor="category">Category</Label>
                   <Select>

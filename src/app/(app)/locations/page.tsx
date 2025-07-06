@@ -140,7 +140,7 @@ export default function LocationsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Address</TableHead>
+                <TableHead className="hidden sm:table-cell">Address</TableHead>
                 <TableHead>Assets</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
@@ -156,7 +156,7 @@ export default function LocationsPage() {
                         {location.name}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-muted-foreground">{location.address || "N/A"}</TableCell>
+                    <TableCell className="text-muted-foreground hidden sm:table-cell">{location.address || "N/A"}</TableCell>
                     <TableCell className="text-muted-foreground">{location.assetCount}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>

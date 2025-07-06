@@ -204,7 +204,7 @@ export default function LocationDetailsPage() {
                 <TableRow>
                   <TableHead>Asset Name</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Custodian</TableHead>
+                  <TableHead className="hidden sm:table-cell">Custodian</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -224,7 +224,7 @@ export default function LocationDetailsPage() {
                           {asset.status}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-muted-foreground">
+                      <TableCell className="text-muted-foreground hidden sm:table-cell">
                         {asset.custodian?.name || "N/A"}
                       </TableCell>
                     </TableRow>

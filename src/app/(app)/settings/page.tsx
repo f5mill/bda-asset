@@ -174,7 +174,7 @@ function QrCodeGenerationContent() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Batch ID</TableHead>
-                    <TableHead>Created</TableHead>
+                    <TableHead className="hidden sm:table-cell">Created</TableHead>
                     <TableHead>Quantity</TableHead>
                     <TableHead>Assigned</TableHead>
                     <TableHead>
@@ -188,7 +188,7 @@ function QrCodeGenerationContent() {
                     return (
                         <TableRow key={batch.id}>
                             <TableCell className="font-mono text-sm">{batch.id}</TableCell>
-                            <TableCell><ClientDate date={batch.createdAt} format="toLocaleDateString" /></TableCell>
+                            <TableCell className="hidden sm:table-cell"><ClientDate date={batch.createdAt} format="toLocaleDateString" /></TableCell>
                             <TableCell>{batch.quantity}</TableCell>
                             <TableCell>{assignedCount} / {batch.quantity}</TableCell>
                             <TableCell className="text-right">
@@ -621,7 +621,7 @@ function TeamSettingsContent() {
                                 <TableRow>
                                     <TableHead>Email</TableHead>
                                     <TableHead>Role</TableHead>
-                                    <TableHead>Sent At</TableHead>
+                                    <TableHead className="hidden sm:table-cell">Sent At</TableHead>
                                     <TableHead><span className="sr-only">Actions</span></TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -632,7 +632,7 @@ function TeamSettingsContent() {
                                         <TableCell>
                                             <Badge variant="outline">{invite.role}</Badge>
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="hidden sm:table-cell">
                                             <ClientDate date={invite.sentAt} format="toLocaleDateString" />
                                         </TableCell>
                                         <TableCell className="text-right">

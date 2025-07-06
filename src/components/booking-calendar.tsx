@@ -84,7 +84,7 @@ function DayWithBookings({ displayMonth, date }: DayProps) {
         isOutside && "text-muted-foreground/50",
       )}
     >
-      <time dateTime={format(date, "yyyy-MM-dd")} className="p-1">{format(date, "d")}</time>
+      <time dateTime={format(date, 'yyyy-MM-dd')} className="p-1">{format(date, "d")}</time>
       {bookingsForDay.length > 0 && (
         <div className="absolute inset-x-0 top-7 flex w-full flex-1 flex-col gap-1">
           {tracksForDay.map((booking, trackIndex) => {
@@ -200,7 +200,7 @@ export function BookingCalendar({ bookings, month, onMonthChange, className }: B
             head_row: "flex border-b",
             head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] p-2 text-center",
             row: "flex w-full mt-0 border-b",
-            cell: "h-32 w-full text-center text-sm p-0 relative border-r last:border-r-0",
+            cell: "h-24 md:h-32 w-full text-center text-sm p-0 relative border-r last:border-r-0",
             day: "h-full w-full",
             day_today: "bg-accent text-accent-foreground",
           }}
