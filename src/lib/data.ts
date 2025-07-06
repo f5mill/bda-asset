@@ -123,6 +123,7 @@ export const assets: Asset[] = [
 export const bookings: Booking[] = [
   {
     id: 'BOOK-001',
+    purpose: 'Product Launch Photoshoot',
     assetIds: ['ASSET-003'],
     bookedBy: 'Marketing Team',
     startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
@@ -132,6 +133,7 @@ export const bookings: Booking[] = [
   },
   {
     id: 'BOOK-002',
+    purpose: 'Engineering Project',
     assetIds: ['ASSET-001'],
     bookedBy: 'Alice Johnson',
     startDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
@@ -140,6 +142,7 @@ export const bookings: Booking[] = [
   },
   {
     id: 'BOOK-003',
+    purpose: 'Internal Tech Fair',
     assetIds: ['ASSET-004', 'ASSET-002'],
     bookedBy: 'IT Support',
     startDate: '2023-10-10T09:00:00Z',
@@ -149,6 +152,7 @@ export const bookings: Booking[] = [
   },
   {
     id: 'BOOK-004',
+    purpose: 'Logistics Delivery',
     assetIds: ['ASSET-005'],
     bookedBy: 'Logistics Dept',
     startDate: '2023-09-01T08:00:00Z',
@@ -157,6 +161,7 @@ export const bookings: Booking[] = [
   },
    {
     id: 'BOOK-005',
+    purpose: 'Cancelled Project',
     assetIds: ['ASSET-002'],
     bookedBy: 'Alex Smith',
     startDate: '2023-08-15T09:00:00Z',

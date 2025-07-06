@@ -50,6 +50,7 @@ function BookingsTable({ bookings }: { bookings: Booking[] }) {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead>Purpose</TableHead>
           <TableHead>Asset(s)</TableHead>
           <TableHead>Booked By</TableHead>
           <TableHead>Start Date</TableHead>
@@ -64,14 +65,17 @@ function BookingsTable({ bookings }: { bookings: Booking[] }) {
           return (
             <TableRow key={booking.id}>
               <TableCell>
-                <div className="flex flex-col">
-                  {bookedAssets.map((asset, index) => (
-                    <Link key={asset.id} href={`/assets/${asset.id}`} className="font-medium hover:underline">
+                <div className="font-medium">{booking.purpose}</div>
+                <div className="text-sm text-muted-foreground truncate max-w-xs">{booking.notes}</div>
+              </TableCell>
+              <TableCell>
+                <div className="flex flex-col gap-1">
+                  {bookedAssets.map((asset) => (
+                    <Link key={asset.id} href={`/assets/${asset.id}`} className="font-medium hover:underline text-sm leading-tight">
                       {asset.name}
-                      {bookedAssets.length > 1 && index < bookedAssets.length -1 ? ', ' : ''}
                     </Link>
                   ))}
-                  {bookedAssets.length === 0 && <span className="text-muted-foreground">Asset not found</span>}
+                  {bookedAssets.length === 0 && <span className="text-muted-foreground text-sm">Asset not found</span>}
                 </div>
               </TableCell>
               <TableCell className="text-muted-foreground">{booking.bookedBy}</TableCell>
@@ -124,10 +128,12 @@ export default function BookingsPage() {
               Manage your asset bookings here.
             </CardDescription>
           </div>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create Booking
-          </Button>
+          <Link href="/bookings/new">
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Create Booking
+            </Button>
+          </Link>
         </div>
       </CardHeader>
       <CardContent>

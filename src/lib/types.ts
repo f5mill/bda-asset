@@ -53,6 +53,7 @@ export type BookingStatus = "Upcoming" | "Active" | "Completed" | "Cancelled";
 
 export type Booking = {
   id: string;
+  purpose: string;
   assetIds: string[];
   bookedBy: string;
   startDate: string; // ISO date string
