@@ -59,24 +59,8 @@ import { Label } from "@/components/ui/label"
 import { QrCodeSvg } from "@/components/qr-code-svg"
 import { ClientDate } from "@/components/client-date"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-
-type QRBatch = {
-  id: string;
-  createdAt: string;
-  quantity: number;
-  codes: { id: string; assignedTo: string | null }[];
-};
-
-const initialBatches: QRBatch[] = [
-  { id: 'BATCH-001', createdAt: '2023-11-06T14:00:00Z', quantity: 2, codes: [ { id: 'QR-1A2B3C', assignedTo: null }, { id: 'QR-4D5E6F', assignedTo: null } ] },
-  { id: 'BATCH-002', createdAt: '2023-11-05T13:00:00Z', quantity: 2, codes: [ { id: 'QR-T4U5V7', assignedTo: null }, { id: 'QR-X7Y8Z9', assignedTo: null } ] },
-  { id: 'BATCH-003', createdAt: '2023-11-04T12:00:00Z', quantity: 2, codes: [ { id: 'QR-M4N5P7', assignedTo: null }, { id: 'QR-Q1R2S4', assignedTo: 'ASSET-004' } ] },
-  { id: 'BATCH-004', createdAt: '2023-11-03T11:00:00Z', quantity: 2, codes: [ { id: 'QR-G7H8I0', assignedTo: 'ASSET-003' }, { id: 'QR-J1K2L4', assignedTo: null } ] },
-  { id: 'BATCH-005', createdAt: '2023-11-02T10:00:00Z', quantity: 2, codes: [ { id: 'QR-A1B2C4', assignedTo: null }, { id: 'QR-D4E5F7', assignedTo: null } ] },
-  { id: 'BATCH-006', createdAt: '2023-11-01T10:00:00Z', quantity: 3, codes: [ { id: 'QR-G1H2I3', assignedTo: 'ASSET-005' }, { id: 'QR-J4K5L6', assignedTo: null }, { id: 'QR-M7N8P9', assignedTo: null } ] },
-  { id: 'BATCH-007', createdAt: '2023-10-31T15:20:00Z', quantity: 2, codes: [ { id: 'QR-Q1R2S3', assignedTo: 'ASSET-002' }, { id: 'QR-T4U5V6', assignedTo: 'ASSET-001' } ] },
-];
+import { qrBatches } from "@/lib/data"
+import type { QRBatch } from "@/lib/types"
 
 
 const pendingInvites = [
@@ -86,7 +70,7 @@ const pendingInvites = [
 ];
 
 function QrCodeGenerationContent() {
-    const [batches, setBatches] = useState<QRBatch[]>(initialBatches);
+    const [batches, setBatches] = useState<QRBatch[]>(qrBatches);
     const [quantity, setQuantity] = useState(20);
     const [batchToPrint, setBatchToPrint] = useState<QRBatch | null>(null);
     const [batchToView, setBatchToView] = useState<QRBatch | null>(null);
@@ -135,7 +119,8 @@ function QrCodeGenerationContent() {
             codes: newCodes,
         };
       
-        setBatches(prev => [newBatch, ...prev]);
+        qrBatches.unshift(newBatch);
+        setBatches([...qrBatches]);
         setBatchToPrint(newBatch);
         setCurrentPage(1);
         setDialogCurrentPage(1);
@@ -143,7 +128,11 @@ function QrCodeGenerationContent() {
 
     const handleDeleteBatch = () => {
         if (batchToDelete) {
-            setBatches(batches.filter(b => b.id !== batchToDelete.id));
+            const newBatchesData = qrBatches.filter(b => b.id !== batchToDelete.id);
+            qrBatches.length = 0; // Clear original array
+            qrBatches.push(...newBatchesData); // Repopulate with filtered data
+            
+            setBatches(newBatchesData);
             setBatchToDelete(null);
         }
     }

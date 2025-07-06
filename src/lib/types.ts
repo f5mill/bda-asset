@@ -38,6 +38,19 @@ export type Asset = {
   isBookable?: boolean;
 };
 
+export type QRCode = {
+  id: string;
+  assignedTo: string | null;
+};
+
+export type QRBatch = {
+  id: string;
+  createdAt: string;
+  quantity: number;
+  codes: QRCode[];
+};
+
+
 export type UnclaimedQRCode = {
     id: string;
     qrCodeValue: string; // The data embedded in the QR
@@ -45,7 +58,7 @@ export type UnclaimedQRCode = {
 };
 
 export type Location = {
-  id: string;
+  id:string;
   name: string;
   address?: string;
   description?: string;

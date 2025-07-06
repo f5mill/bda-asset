@@ -23,7 +23,7 @@ import {
   UserRoundPlus,
 } from "lucide-react"
 
-import { assets, bookings as initialBookings, locations } from "@/lib/data"
+import { assets, bookings as initialBookings, locations, qrBatches } from "@/lib/data"
 import { getBadgeVariant } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -58,7 +58,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
-import type { Asset, Booking } from "@/lib/types"
+import type { Asset, Booking, QRCode } from "@/lib/types"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Select,
@@ -78,6 +78,9 @@ export default function AssetDetailsPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isLocationDialogOpen, setIsLocationDialogOpen] = useState(false);
   const [isAddToBookingDialogOpen, setIsAddToBookingDialogOpen] = useState(false);
+  const [isLinkQrDialogOpen, setIsLinkQrDialogOpen] = useState(false);
+  const [availableQrCodes, setAvailableQrCodes] = useState<QRCode[]>([]);
+  const [selectedQrCode, setSelectedQrCode] = useState<string | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [newAssignedLocation, setNewAssignedLocation] = useState("");
   const { toast } = useToast();
@@ -263,6 +266,49 @@ export default function AssetDetailsPage() {
         description: `${asset.name} is now ${isBookable ? 'available' : 'unavailable'} for bookings.`,
     });
   };
+
+  const handleLinkQrCode = () => {
+    if (!asset || !selectedQrCode) return;
+
+    const oldQrCodeId = asset.qrCodeId;
+
+    // 1. Unassign the old QR code from its asset in the main `assets` array
+    if (oldQrCodeId) {
+        for (const batch of qrBatches) {
+            const code = batch.codes.find(c => c.id === oldQrCodeId);
+            if (code) {
+                code.assignedTo = null;
+                break;
+            }
+        }
+    }
+
+    // 2. Assign the new QR code to this asset
+    for (const batch of qrBatches) {
+        const code = batch.codes.find(c => c.id === selectedQrCode);
+        if (code) {
+            code.assignedTo = asset.id;
+            break;
+        }
+    }
+
+    // 3. Update the asset's qrCodeId in component state
+    const updatedAsset = { ...asset, qrCodeId: selectedQrCode };
+    setAsset(updatedAsset);
+
+    // 4. Update the asset in the main `assets` array to persist change across navigation
+    const assetIndex = assets.findIndex(a => a.id === asset.id);
+    if (assetIndex > -1) {
+        assets[assetIndex] = updatedAsset;
+    }
+
+    toast({
+        title: "QR Code Linked",
+        description: `Asset ${asset.name} is now linked to QR code ${selectedQrCode}.`,
+    });
+
+    setIsLinkQrDialogOpen(false);
+  };
   
   const upcomingAndActiveBookings = bookings.filter(b => b.status === 'Upcoming' || b.status === 'Active');
   
@@ -349,7 +395,26 @@ export default function AssetDetailsPage() {
                 <span>Edit assigned location</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => {
+                if (asset) {
+                    const unassignedCodes = qrBatches
+                        .flatMap(batch => batch.codes)
+                        .filter(code => code.assignedTo === null);
+                    
+                    const currentCodeObject = qrBatches
+                        .flatMap(batch => batch.codes)
+                        .find(code => code.id === asset.qrCodeId);
+
+                    const codesForSelect = [...unassignedCodes];
+                    if (currentCodeObject && !codesForSelect.find(c => c.id === currentCodeObject.id)) {
+                        codesForSelect.unshift(currentCodeObject);
+                    }
+
+                    setAvailableQrCodes(codesForSelect);
+                    setSelectedQrCode(asset.qrCodeId);
+                    setIsLinkQrDialogOpen(true);
+                }
+              }}>
                 <QrCode className="mr-2 h-4 w-4" />
                 <span>Relink QR Code</span>
               </DropdownMenuItem>
@@ -630,6 +695,39 @@ export default function AssetDetailsPage() {
             <DialogFooter>
                 <Button variant="outline" onClick={() => setIsAddToBookingDialogOpen(false)}>Cancel</Button>
                 <Button onClick={handleAddToBooking} disabled={!selectedBookingId}>Add to Booking</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isLinkQrDialogOpen} onOpenChange={setIsLinkQrDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Link QR Code to {asset.name}</DialogTitle>
+                <DialogDescription>
+                    Select an unassigned QR code to link to this asset. This will replace the current QR code.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+                <Label htmlFor="qr-code-select">Available QR Codes</Label>
+                <Select onValueChange={setSelectedQrCode} defaultValue={selectedQrCode ?? undefined}>
+                    <SelectTrigger id="qr-code-select">
+                        <SelectValue placeholder="Select a QR code..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {availableQrCodes.length > 0 ? (
+                            availableQrCodes.map(code => (
+                                <SelectItem key={code.id} value={code.id}>
+                                    {code.id}
+                                </SelectItem>
+                            ))
+                        ) : (
+                           <div className="p-4 text-center text-sm text-muted-foreground">No unassigned QR codes available.</div>
+                        )}
+                    </SelectContent>
+                </Select>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsLinkQrDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleLinkQrCode} disabled={!selectedQrCode || selectedQrCode === asset.qrCodeId}>Link QR Code</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
