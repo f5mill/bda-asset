@@ -23,7 +23,7 @@ import {
   UserRoundPlus,
 } from "lucide-react"
 
-import { assets, bookings as initialBookings } from "@/lib/data"
+import { assets, bookings as initialBookings, locations } from "@/lib/data"
 import { getBadgeVariant } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -556,13 +556,22 @@ export default function AssetDetailsPage() {
                     <Label htmlFor="assigned-location" className="text-right">
                         Location
                     </Label>
-                    <Input
-                        id="assigned-location"
+                    <Select
                         value={newAssignedLocation}
-                        onChange={(e) => setNewAssignedLocation(e.target.value)}
-                        className="col-span-3"
-                        placeholder="e.g. Floor 5, LA Office"
-                    />
+                        onValueChange={setNewAssignedLocation}
+                    >
+                        <SelectTrigger id="assigned-location" className="col-span-3">
+                            <SelectValue placeholder="Select a location" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {locations.map((location) => (
+                                <SelectItem key={location.id} value={location.name}>
+                                    {location.name}
+                                </SelectItem>
+                            ))}
+                            <SelectItem value="Unassigned">Unassigned</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
             <DialogFooter>
@@ -606,5 +615,3 @@ export default function AssetDetailsPage() {
     </div>
   )
 }
-
-    

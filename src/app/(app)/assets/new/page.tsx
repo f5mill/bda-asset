@@ -23,6 +23,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { categories, locations } from "@/lib/data"
 
 
 export default function NewAssetPage() {
@@ -82,22 +83,28 @@ export default function NewAssetPage() {
                       <SelectValue placeholder="Select a category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="electronics">Electronics</SelectItem>
-                      <SelectItem value="furniture">Furniture</SelectItem>
-                      <SelectItem value="vehicles">Vehicles</SelectItem>
-                      <SelectItem value="equipment">Equipment</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                            {category.name}
+                        </SelectItem>
+                      ))}
                       <SelectItem value="uncategorized">Uncategorized</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="grid gap-3">
                   <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    type="text"
-                    className="w-full"
-                    placeholder="e.g. Floor 5, LA Office"
-                  />
+                  <Select>
+                    <SelectTrigger id="location" aria-label="Select location">
+                      <SelectValue placeholder="Select a location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                       {locations.map(location => (
+                        <SelectItem key={location.id} value={location.name}>{location.name}</SelectItem>
+                      ))}
+                      <SelectItem value="Unassigned">Unassigned</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid gap-3">
