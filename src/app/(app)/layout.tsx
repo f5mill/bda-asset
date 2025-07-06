@@ -29,6 +29,7 @@ import {
     SidebarInset,
     SidebarTrigger,
     SidebarSeparator,
+    useSidebar,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import { Logo } from "@/components/logo"
@@ -43,13 +44,14 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-export default function AppLayout({
+function AppLayoutClient({
     children,
 }: {
     children: React.ReactNode
 }) {
     const pathname = usePathname()
     const [pageTitle, setPageTitle] = useState("")
+    const { isMobile, setOpenMobile } = useSidebar()
 
     useEffect(() => {
         const getPageTitle = (path: string) => {
@@ -69,10 +71,14 @@ export default function AppLayout({
             return 'Dashboard'
         }
         setPageTitle(getPageTitle(pathname))
-    }, [pathname])
+
+        if (isMobile) {
+            setOpenMobile(false)
+        }
+    }, [pathname, isMobile, setOpenMobile])
 
     return (
-        <SidebarProvider>
+        <>
             <Sidebar collapsible="icon">
                 <SidebarHeader>
                     <Logo />
@@ -241,6 +247,19 @@ export default function AppLayout({
                     {children}
                 </main>
             </SidebarInset>
+        </>
+    )
+}
+
+
+export default function AppLayout({
+    children,
+}: {
+    children: React.ReactNode
+}) {
+    return (
+        <SidebarProvider>
+            <AppLayoutClient>{children}</AppLayoutClient>
         </SidebarProvider>
     )
 }
