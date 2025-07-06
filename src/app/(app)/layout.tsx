@@ -200,7 +200,7 @@ export default function AppLayout({
                                     </Avatar>
                                     <div className="ml-2 text-left group-data-[collapsible=icon]:hidden">
                                         <p className="font-medium text-sm">Admin User</p>
-                                        <p className="text-xs text-muted-foreground">admin@assethound.com</p>
+                                        <p className="text-xs text-muted-foreground">admin@assetinsight.com</p>
                                     </div>
                                 </Button>
                             </DropdownMenuTrigger>
@@ -209,7 +209,7 @@ export default function AppLayout({
                                 <div className="flex flex-col space-y-1">
                                     <p className="text-sm font-medium leading-none">Admin User</p>
                                     <p className="text-xs leading-none text-muted-foreground">
-                                    admin@assethound.com
+                                    admin@assetinsight.com
                                     </p>
                                 </div>
                                 </DropdownMenuLabel>

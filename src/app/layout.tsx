@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Asset Hound',
+  title: 'AssetInsight',
   description: 'Track and manage your assets with ease.',
   manifest: '/manifest.json',
 };

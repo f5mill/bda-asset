@@ -7,7 +7,7 @@ export function Logo() {
         <PawPrint className="h-6 w-6" />
       </div>
       <span className="font-bold text-lg font-headline group-data-[collapsible=icon]:hidden">
-        Asset Hound
+        AssetInsight
       </span>
     </div>
   );
