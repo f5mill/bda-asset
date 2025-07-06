@@ -10,26 +10,22 @@ import {
   isSameDay,
 } from "date-fns"
 import type { DayProps } from "react-day-picker"
-import Link from "next/link"
 
-import type { Booking, Asset } from "@/lib/types"
+import type { Booking } from "@/lib/types"
 import { cn } from "@/lib/utils"
-import { assets } from "@/lib/data"
 import { DayPicker } from "react-day-picker"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import { getBookingStatusVariant } from "@/lib/utils"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface BookingCalendarProps {
   bookings: Booking[]
   month: Date
   onMonthChange: (date: Date) => void
   className?: string
-}
-
-const getAssetsForBooking = (assetIds: string[]): Asset[] => {
-  return assetIds.map(id => assets.find(asset => asset.id === id)).filter(Boolean) as Asset[]
 }
 
 const BookingCalendarContext = React.createContext<{ bookings: Booking[] } | null>(null);
@@ -42,7 +38,7 @@ function useBookingCalendarContext() {
     return context;
 }
 
-function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
+function DayWithBookings({ displayMonth, date }: DayProps) {
   const { bookings } = useBookingCalendarContext()
 
   const bookingsForDay = React.useMemo(() => {
@@ -58,50 +54,56 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
 
   const isOutside = date.getMonth() !== displayMonth.getMonth();
 
-  const dayCellContent = (
+  return (
     <div
       className={cn(
-        "flex h-full w-full flex-col items-start p-1",
+        "flex h-full w-full flex-col items-start",
         isOutside && "text-muted-foreground/50",
-        props.className
       )}
     >
-      <time dateTime={date.toISOString()}>{format(date, "d")}</time>
+      <time dateTime={date.toISOString()} className="p-1">{format(date, "d")}</time>
       {bookingsForDay.length > 0 && (
-        <div className="mt-1 flex w-full flex-1 flex-col gap-1 overflow-hidden">
+        <div className="flex w-full flex-1 flex-col gap-1 overflow-hidden">
           {bookingsForDay.slice(0, 3).map((booking) => {
             const bookingStart = startOfDay(new Date(booking.startDate))
             const bookingEnd = startOfDay(new Date(booking.endDate))
             
             const isStart = isSameDay(date, bookingStart)
             const isEnd = isSameDay(date, bookingEnd)
-            
-            const isWeekStart = date.getDay() === 1
-            const isWeekEnd = date.getDay() === 0
-
-            const showTitle = isStart || isWeekStart
 
             return (
-              <div
-                key={booking.id}
-                className={cn(
-                  "w-[calc(100%+0.5rem)] -translate-x-1 truncate text-left text-xs py-0.5 px-2",
-                  {
-                    "bg-primary text-primary-foreground": booking.status === "Active",
-                    "bg-accent text-accent-foreground": booking.status === "Upcoming"
-                  },
-                  {
-                    "rounded-l-sm": isStart || isWeekStart,
-                    "rounded-r-sm": isEnd || isWeekEnd,
-                  }
-                )}
-              >
-               {showTitle ? `• ${booking.purpose}` : <>&nbsp;</>}
-              </div>
+              <Tooltip key={booking.id} delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <div
+                    className={cn(
+                      "w-full h-4 cursor-pointer",
+                      {
+                        "bg-primary": booking.status === "Active",
+                        "bg-accent": booking.status === "Upcoming",
+                      },
+                      {
+                        "rounded-l-sm": isStart,
+                        "rounded-r-sm": isEnd,
+                      }
+                    )}
+                  >
+                    <span className="sr-only">{booking.purpose}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="space-y-1">
+                    <p className="font-semibold">{booking.purpose}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {format(bookingStart, "LLL d")} - {format(bookingEnd, "LLL d, yyyy")}
+                    </p>
+                    <p className="text-xs">Booked by: {booking.bookedBy}</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             )
           })}
           {bookingsForDay.length > 3 && (
-            <div className="text-xs text-muted-foreground px-1">
+            <div className="text-xs text-muted-foreground px-1 mt-1">
               + {bookingsForDay.length - 3} more
             </div>
           )}
@@ -109,57 +111,6 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
       )}
     </div>
   );
-  
-  if (bookingsForDay.length > 0) {
-    return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <div className="h-full w-full cursor-pointer">{dayCellContent}</div>
-        </PopoverTrigger>
-        <PopoverContent className="w-80" align="start">
-          <div className="space-y-2">
-            <h4 className="font-medium">
-              Bookings for {format(date, "MMM d, yyyy")}
-            </h4>
-            <div className="max-h-60 space-y-2 overflow-y-auto">
-              {bookingsForDay.map((booking) => {
-                const bookedAssets = getAssetsForBooking(booking.assetIds)
-                return (
-                  <Card key={booking.id} className="text-sm">
-                    <CardHeader className="flex-row items-center justify-between p-2">
-                      <div>
-                        <CardTitle className="text-sm">{booking.purpose}</CardTitle>
-                        <CardDescription>By: {booking.bookedBy}</CardDescription>
-                      </div>
-                      <Badge variant={getBookingStatusVariant(booking.status) as any} className="text-xs">
-                        {booking.status}
-                      </Badge>
-                    </CardHeader>
-                    {bookedAssets.length > 0 && 
-                      <CardContent className="p-2 pt-0">
-                          <p className="text-xs font-semibold">Asset(s):</p>
-                          <ul className="space-y-1 text-xs">
-                              {bookedAssets.map((asset) => (
-                                  <li key={asset.id}>
-                                      <Link href={`/assets/${asset.id}`} className="hover:underline">
-                                          {asset.name}
-                                      </Link>
-                                  </li>
-                              ))}
-                          </ul>
-                      </CardContent>
-                    }
-                  </Card>
-                )
-              })}
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
-    )
-  }
-
-  return dayCellContent;
 }
 
 export function BookingCalendar({ bookings, month, onMonthChange, className }: BookingCalendarProps) {
@@ -167,28 +118,30 @@ export function BookingCalendar({ bookings, month, onMonthChange, className }: B
   
   return (
     <BookingCalendarContext.Provider value={contextValue}>
-      <DayPicker
-        month={month}
-        onMonthChange={onMonthChange}
-        showOutsideDays
-        fixedWeeks
-        weekStartsOn={1}
-        className={cn(className)}
-        classNames={{
-          month: "space-y-4",
-          caption: "hidden",
-          table: "w-full border-collapse",
-          head_row: "flex border-b",
-          head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] p-2 text-center",
-          row: "flex w-full mt-0 border-b",
-          cell: "h-32 w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20 border-r last:border-r-0",
-          day: "h-full w-full",
-          day_today: "bg-accent text-accent-foreground",
-        }}
-        components={{
-          Day: DayWithBookings,
-        }}
-      />
+      <TooltipProvider>
+        <DayPicker
+          month={month}
+          onMonthChange={onMonthChange}
+          showOutsideDays
+          fixedWeeks
+          weekStartsOn={1}
+          className={cn(className)}
+          classNames={{
+            month: "space-y-4",
+            caption: "hidden",
+            table: "w-full border-collapse",
+            head_row: "flex border-b",
+            head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] p-2 text-center",
+            row: "flex w-full mt-0 border-b",
+            cell: "h-32 w-full text-center text-sm p-0 relative border-r last:border-r-0",
+            day: "h-full w-full",
+            day_today: "bg-accent text-accent-foreground",
+          }}
+          components={{
+            Day: DayWithBookings,
+          }}
+        />
+      </TooltipProvider>
     </BookingCalendarContext.Provider>
   )
 }
