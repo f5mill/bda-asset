@@ -91,6 +91,7 @@ export default function NewBookingPage() {
     }
 
     const selectedAssets = assets.filter(asset => form.watch("assetIds").includes(asset.id))
+    const bookableAssets = assets.filter(asset => asset.isBookable ?? true);
 
     return (
         <Form {...form}>
@@ -155,7 +156,7 @@ export default function NewBookingPage() {
                                         <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                                             <ScrollArea className="h-72">
                                               <div className="p-4 space-y-4">
-                                                {assets.map((asset) => (
+                                                {bookableAssets.map((asset) => (
                                                   <FormField
                                                     key={asset.id}
                                                     control={form.control}
@@ -283,5 +284,3 @@ export default function NewBookingPage() {
         </Form>
     )
 }
-
-    

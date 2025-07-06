@@ -86,7 +86,11 @@ export default function AssetDetailsPage() {
     if (params.id) {
       const assetData = assets.find((a) => a.id === params.id)
       if (assetData) {
-        setAsset(JSON.parse(JSON.stringify(assetData)))
+        const assetWithDefaults = {
+            ...assetData,
+            isBookable: assetData.isBookable ?? true,
+        };
+        setAsset(JSON.parse(JSON.stringify(assetWithDefaults)))
       }
     }
     setIsLoading(false);
@@ -246,6 +250,19 @@ export default function AssetDetailsPage() {
     setIsAddToBookingDialogOpen(false);
     setSelectedBookingId(null);
   };
+
+  const handleToggleBookable = (isBookable: boolean) => {
+    if (!asset) return;
+    // In a real app, this would also trigger a database update.
+    setAsset(prevAsset => {
+        if (!prevAsset) return null;
+        return { ...prevAsset, isBookable };
+    });
+    toast({
+        title: 'Booking Availability Updated',
+        description: `${asset.name} is now ${isBookable ? 'available' : 'unavailable'} for bookings.`,
+    });
+  };
   
   const upcomingAndActiveBookings = bookings.filter(b => b.status === 'Upcoming' || b.status === 'Active');
   
@@ -363,7 +380,7 @@ export default function AssetDetailsPage() {
           </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button>Book</Button>
+              <Button disabled={!asset.isBookable}>Book</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onSelect={() => router.push(`/bookings/new?assetId=${asset.id}`)}>
@@ -442,7 +459,11 @@ export default function AssetDetailsPage() {
                             <h3 className="font-semibold">Available for bookings</h3>
                             <p className="text-sm text-muted-foreground">Asset is available for being used in bookings.</p>
                         </div>
-                        <Switch id="booking-availability" />
+                        <Switch 
+                            id="booking-availability"
+                            checked={asset.isBookable}
+                            onCheckedChange={handleToggleBookable}
+                        />
                     </div>
                 </CardContent>
             </Card>

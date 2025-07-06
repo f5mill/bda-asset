@@ -1,3 +1,4 @@
+
 import type { Asset, Location, Category, Booking } from './types';
 
 export const categories: Category[] = [
@@ -32,7 +33,8 @@ export const assets: Asset[] = [
       browser: 'Chrome',
       os: 'macOS',
       source: 'Manual Entry'
-    }
+    },
+    isBookable: true,
   },
   {
     id: 'ASSET-002',
@@ -53,7 +55,8 @@ export const assets: Asset[] = [
       browser: 'Firefox',
       os: 'Windows',
       source: 'Initial Import'
-    }
+    },
+    isBookable: true,
   },
   {
     id: 'ASSET-003',
@@ -74,7 +77,8 @@ export const assets: Asset[] = [
       browser: 'Safari',
       os: 'iOS',
       source: 'QR Code Scan'
-    }
+    },
+    isBookable: true,
   },
   {
     id: 'ASSET-004',
@@ -95,7 +99,8 @@ export const assets: Asset[] = [
       browser: 'Edge',
       os: 'Windows',
       source: 'Manual Entry'
-    }
+    },
+    isBookable: false,
   },
   {
     id: 'ASSET-005',
@@ -116,7 +121,8 @@ export const assets: Asset[] = [
       browser: 'Chrome',
       os: 'Android',
       source: 'QR Code Scan'
-    }
+    },
+    isBookable: true,
   },
 ];
 

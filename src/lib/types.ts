@@ -1,3 +1,4 @@
+
 export type AssetStatus = "Available" | "Checked Out" | "In Repair" | "Booked";
 
 export type ScanDetails = {
@@ -34,6 +35,7 @@ export type Asset = {
   };
   lastScan: string; // ISO date string
   scanDetails?: ScanDetails;
+  isBookable?: boolean;
 };
 
 export type UnclaimedQRCode = {
