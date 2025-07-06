@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useParams } from "next/navigation"
 import {
   AlarmClock,
   CalendarCheck,
@@ -52,16 +53,19 @@ import type { Asset } from "@/lib/types"
 import { Skeleton } from "@/components/ui/skeleton"
 
 
-export default function AssetDetailsPage({ params }: { params: { id: string } }) {
+export default function AssetDetailsPage() {
+  const params = useParams<{ id: string }>()
   const [asset, setAsset] = useState<Asset | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const assetData = assets.find((a) => a.id === params.id)
-    if (assetData) {
-      setAsset(JSON.parse(JSON.stringify(assetData)))
+    if (params.id) {
+      const assetData = assets.find((a) => a.id === params.id)
+      if (assetData) {
+        setAsset(JSON.parse(JSON.stringify(assetData)))
+      }
     }
     setIsLoading(false);
   }, [params.id])
@@ -388,3 +392,5 @@ export default function AssetDetailsPage({ params }: { params: { id: string } })
     </div>
   )
 }
+
+    
