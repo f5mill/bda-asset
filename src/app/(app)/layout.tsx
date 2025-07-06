@@ -3,6 +3,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState, useEffect } from "react"
 import {
     LayoutGrid,
     QrCode,
@@ -49,22 +50,28 @@ export default function AppLayout({
     children: React.ReactNode
 }) {
     const pathname = usePathname()
+    const [pageTitle, setPageTitle] = useState("")
 
-    const getPageTitle = (path: string) => {
-        if (path === '/') return 'Dashboard'
-        if (path === '/assets') return 'Assets'
-        if (path.startsWith('/assets/new')) return 'Register New Asset'
-        if (path.startsWith('/assets/')) return 'Asset Details'
-        if (path === '/scan') return 'Scan QR Code'
-        if (path === '/bookings') return 'Bookings'
-        if (path === '/pools') return 'Pools'
-        if (path === '/reminders') return 'Reminders'
-        if (path === '/categories') return 'Categories'
-        if (path === '/tags') return 'Tags'
-        if (path === '/locations') return 'Locations'
-        if (path.startsWith('/settings')) return 'Settings'
-        return 'Dashboard'
-    }
+    useEffect(() => {
+        const getPageTitle = (path: string) => {
+            if (path === '/') return 'Dashboard'
+            if (path.startsWith('/assets/new')) return 'Register New Asset'
+            if (path.startsWith('/assets/')) return 'Asset Details'
+            if (path === '/assets') return 'Assets'
+            if (path === '/scan') return 'Scan QR Code'
+            if (path.startsWith('/bookings/new')) return 'Create New Booking'
+            if (path === '/bookings') return 'Bookings'
+            if (path === '/pools') return 'Pools'
+            if (path === '/reminders') return 'Reminders'
+            if (path === '/categories') return 'Categories'
+            if (path === '/tags') return 'Tags'
+            if (path.startsWith('/locations/')) return 'Location Details'
+            if (path === '/locations') return 'Locations'
+            if (path.startsWith('/settings')) return 'Settings'
+            return 'Dashboard'
+        }
+        setPageTitle(getPageTitle(pathname))
+    }, [pathname])
 
     return (
         <SidebarProvider>
@@ -235,7 +242,7 @@ export default function AppLayout({
                 <header className="flex items-center justify-between p-4 border-b">
                     <div className="flex items-center gap-2">
                          <SidebarTrigger />
-                         <h1 className="text-base sm:text-lg font-semibold font-headline truncate">{getPageTitle(pathname)}</h1>
+                         <h1 className="text-base sm:text-lg font-semibold font-headline truncate">{pageTitle || <>&nbsp;</>}</h1>
                     </div>
                     <div className="flex items-center gap-1 sm:gap-2">
                         <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-9 sm:w-9">
