@@ -1,4 +1,11 @@
-import type { Asset, Location } from './types';
+import type { Asset, Location, Category } from './types';
+
+export const categories: Category[] = [
+  { id: 'CAT-001', name: 'Electronics', description: 'Laptops, monitors, and peripherals.', color: '#3b82f6' },
+  { id: 'CAT-002', name: 'Furniture', description: 'Desks, chairs, and office furniture.', color: '#a855f7' },
+  { id: 'CAT-003', name: 'Vehicles', description: 'Company cars, vans, and trucks.', color: '#f97316' },
+  { id: 'CAT-004', name: 'Equipment', description: 'Specialized tools and machinery.', color: '#ef4444' },
+];
 
 export const assets: Asset[] = [
   {
@@ -7,6 +14,7 @@ export const assets: Asset[] = [
     description: 'M2 Max, 64GB RAM, 2TB SSD. For engineering team.',
     qrCodeId: 'QR-A1B2C3',
     status: 'Checked Out',
+    categoryId: 'CAT-001',
     assignedLocation: 'Floor 5, Desk 21, Los Angeles Office',
     custodian: {
       id: 'USER-101',
@@ -32,6 +40,7 @@ export const assets: Asset[] = [
     description: 'U2723QE 27-inch 4K UHD. For design team.',
     qrCodeId: 'QR-D4E5F6',
     status: 'Available',
+    categoryId: 'CAT-001',
     assignedLocation: 'Storage Room B, New York Office',
     location: {
       lat: 40.712776,
@@ -52,6 +61,7 @@ export const assets: Asset[] = [
     description: 'Full-frame mirrorless camera with 24-70mm f/2.8 lens.',
     qrCodeId: 'QR-G7H8I9',
     status: 'Booked',
+    categoryId: 'CAT-004',
     assignedLocation: 'Marketing Dept, London Office',
     location: {
       lat: 51.507351,
@@ -72,6 +82,7 @@ export const assets: Asset[] = [
     description: 'Epson Pro EX9240 for meeting rooms.',
     qrCodeId: 'QR-J1K2L3',
     status: 'In Repair',
+    categoryId: 'CAT-004',
     assignedLocation: 'IT Department, Tokyo Office',
     location: {
       lat: 35.689487,
@@ -92,6 +103,7 @@ export const assets: Asset[] = [
     description: 'Ford Transit for logistics and deliveries.',
     qrCodeId: 'QR-M4N5P6',
     status: 'Available',
+    categoryId: 'CAT-003',
     assignedLocation: 'Parking Garage, Level 2, Sydney Office',
     location: {
       lat: -33.868820,

@@ -7,12 +7,20 @@ export type ScanDetails = {
   source?: string;
 };
 
+export type Category = {
+  id: string;
+  name: string;
+  description?: string;
+  color: string; // e.g., a hex color string
+};
+
 export type Asset = {
   id: string;
   name: string;
   description: string;
   qrCodeId: string;
   status: AssetStatus;
+  categoryId?: string;
   assignedLocation: string;
   custodian?: {
     id: string;
