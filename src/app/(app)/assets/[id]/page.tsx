@@ -4,6 +4,8 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 import {
   AlarmClock,
+  CalendarCheck,
+  CalendarPlus,
   ChevronLeft,
   Copy,
   Crosshair,
@@ -111,7 +113,21 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button>Book</Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>Book</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <CalendarPlus className="mr-2 h-4 w-4" />
+                <span>Create new booking</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <CalendarCheck className="mr-2 h-4 w-4" />
+                <span>Add to existing booking</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
