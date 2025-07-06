@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ClientDate } from "@/components/client-date"
 
 export default function Dashboard() {
   return (
@@ -98,7 +99,7 @@ export default function Dashboard() {
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">
-                      {new Date(asset.lastScan).toLocaleDateString()}
+                      <ClientDate date={asset.lastScan} format="toLocaleDateString" />
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {asset.location.address}

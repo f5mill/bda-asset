@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { QrCodeSvg } from "@/components/qr-code-svg"
 import { Separator } from "@/components/ui/separator"
+import { ClientDate } from "@/components/client-date"
 
 export default function AssetDetailsPage({ params }: { params: { id: string } }) {
   const asset = assets.find((a) => a.id === params.id)
@@ -124,7 +125,7 @@ export default function AssetDetailsPage({ params }: { params: { id: string } })
                     <p className="font-medium">Last Scan</p>
                     <p className="text-sm text-muted-foreground">{asset.location.address}</p>
                   </div>
-                  <p className="text-sm text-muted-foreground">{new Date(asset.lastScan).toLocaleString()}</p>
+                  <p className="text-sm text-muted-foreground"><ClientDate date={asset.lastScan} /></p>
                 </div>
               </div>
             </CardContent>

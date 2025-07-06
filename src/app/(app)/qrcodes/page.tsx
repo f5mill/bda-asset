@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { QrCodeSvg } from "@/components/qr-code-svg"
+import { ClientDate } from "@/components/client-date"
 
 const generatedQRCodes = [
   { id: "QR-G1H2I3", createdAt: "2023-11-01T10:00:00Z", assignedTo: "ASSET-005" },
@@ -80,7 +81,7 @@ export default function QRCodesPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      {new Date(code.createdAt).toLocaleDateString()}
+                      <ClientDate date={code.createdAt} format="toLocaleDateString" />
                     </TableCell>
                     <TableCell className="text-right">
                       <Button variant="outline" size="sm" disabled={!!code.assignedTo}>
