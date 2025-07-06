@@ -17,7 +17,6 @@ import { cn } from "@/lib/utils"
 import { assets } from "@/lib/data"
 import { DayPicker } from "react-day-picker"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { buttonVariants } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { getBookingStatusVariant } from "@/lib/utils"
@@ -57,13 +56,19 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
     ).sort((a,b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
   }, [bookings, date])
 
-  const buttonContent = (
-    <>
-      <div className="p-1">
-        <time dateTime={date.toISOString()}>{format(date, "d")}</time>
-      </div>
+  const isOutside = date.getMonth() !== displayMonth.getMonth();
+
+  const dayCellContent = (
+    <div
+      className={cn(
+        "flex h-full w-full flex-col items-start p-1",
+        isOutside && "text-muted-foreground/50",
+        props.className
+      )}
+    >
+      <time dateTime={date.toISOString()}>{format(date, "d")}</time>
       {bookingsForDay.length > 0 && (
-        <div className="flex w-full flex-1 flex-col gap-1 overflow-hidden px-1 pb-1">
+        <div className="mt-1 flex w-full flex-1 flex-col gap-1 overflow-hidden">
           {bookingsForDay.slice(0, 3).map((booking) => {
             const bookingStart = startOfDay(new Date(booking.startDate))
             const bookingEnd = startOfDay(new Date(booking.endDate))
@@ -71,8 +76,8 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
             const isStart = isSameDay(date, bookingStart)
             const isEnd = isSameDay(date, bookingEnd)
             
-            const isWeekStart = date.getDay() === 1 // Monday
-            const isWeekEnd = date.getDay() === 0 // Sunday
+            const isWeekStart = date.getDay() === 1
+            const isWeekEnd = date.getDay() === 0
 
             const showTitle = isStart || isWeekStart
 
@@ -80,7 +85,7 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
               <div
                 key={booking.id}
                 className={cn(
-                  "truncate text-left text-xs py-0.5 px-1",
+                  "w-[calc(100%+0.5rem)] -translate-x-1 truncate text-left text-xs py-0.5 px-2",
                   {
                     "bg-primary text-primary-foreground": booking.status === "Active",
                     "bg-accent text-accent-foreground": booking.status === "Upcoming"
@@ -102,27 +107,14 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
           )}
         </div>
       )}
-    </>
+    </div>
   );
   
-  const isOutside = date.getMonth() !== displayMonth.getMonth();
-
   if (bookingsForDay.length > 0) {
     return (
       <Popover>
         <PopoverTrigger asChild>
-          <button
-            type="button"
-            className={cn(
-              buttonVariants({ variant: "ghost" }),
-              "relative h-full w-full flex-col items-start justify-start font-normal",
-              isOutside && "text-muted-foreground opacity-70",
-              props.className
-            )}
-            disabled={props.disabled}
-          >
-            {buttonContent}
-          </button>
+          <div className="h-full w-full cursor-pointer">{dayCellContent}</div>
         </PopoverTrigger>
         <PopoverContent className="w-80" align="start">
           <div className="space-y-2">
@@ -167,22 +159,7 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
     )
   }
 
-  return (
-    <button
-        type="button"
-        className={cn(
-            buttonVariants({ variant: "ghost" }),
-            "h-full w-full flex-col items-start justify-start font-normal",
-            isOutside && "text-muted-foreground opacity-70",
-            props.className
-        )}
-        disabled={props.disabled}
-    >
-      <div className="p-1">
-        <time dateTime={date.toISOString()}>{format(date, "d")}</time>
-      </div>
-    </button>
-  )
+  return dayCellContent;
 }
 
 export function BookingCalendar({ bookings, month, onMonthChange, className }: BookingCalendarProps) {
