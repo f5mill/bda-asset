@@ -76,11 +76,11 @@ export default function Dashboard() {
 
   const assetsByCategoryData = [{ category: "Uncategorized", count: totalAssets, fill: "hsl(var(--chart-2))" }]
 
-  const recentAssets = [...assets]
+  const mostRecentlyScanned = [...assets]
     .sort((a, b) => new Date(b.lastScan).getTime() - new Date(a.lastScan).getTime())
     .slice(0, 3)
 
-  const unscannedAssets = [...assets]
+  const leastRecentlyScanned = [...assets]
     .sort((a, b) => new Date(a.lastScan).getTime() - new Date(b.lastScan).getTime())
     .slice(0, 3)
 
@@ -183,12 +183,12 @@ export default function Dashboard() {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-medium">Newest assets</CardTitle>
+                    <CardTitle className="text-sm font-medium">Most recently scanned</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableBody>
-                        {recentAssets.map(asset => (
+                        {mostRecentlyScanned.map(asset => (
                             <TableRow key={asset.id}>
                                 <TableCell>
                                     <Link href={`/assets/${asset.id}`} className="font-medium hover:underline">{asset.name}</Link>
@@ -204,12 +204,12 @@ export default function Dashboard() {
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle className="text-sm font-medium">Most unscanned assets</CardTitle>
+                    <CardTitle className="text-sm font-medium">Least recently scanned</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableBody>
-                        {unscannedAssets.map(asset => (
+                        {leastRecentlyScanned.map(asset => (
                             <TableRow key={asset.id}>
                                 <TableCell>
                                     <Link href={`/assets/${asset.id}`} className="font-medium hover:underline">{asset.name}</Link>
