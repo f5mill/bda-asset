@@ -13,6 +13,7 @@ import {
     AlarmClock,
     LayoutList,
     Boxes,
+    Package,
 } from "lucide-react"
 
 import {
@@ -50,6 +51,9 @@ export default function AppLayout({
 
     const getPageTitle = (path: string) => {
         if (path === '/') return 'Dashboard'
+        if (path === '/assets') return 'Assets'
+        if (path.startsWith('/assets/new')) return 'Register New Asset'
+        if (path.startsWith('/assets/')) return 'Asset Details'
         if (path === '/scan') return 'Scan QR Code'
         if (path === '/bookings') return 'Bookings'
         if (path === '/pools') return 'Pools'
@@ -58,8 +62,6 @@ export default function AppLayout({
         if (path === '/tags') return 'Tags'
         if (path === '/locations') return 'Locations'
         if (path.startsWith('/settings')) return 'Settings'
-        if (path.startsWith('/assets/new')) return 'Register New Asset'
-        if (path.startsWith('/assets/')) return 'Asset Details'
         return 'Dashboard'
     }
 
@@ -72,77 +74,118 @@ export default function AppLayout({
                 <SidebarContent>
                     <SidebarMenu>
                         <SidebarMenuItem>
-                            <Link href="/">
-                                <SidebarMenuButton
-                                    isActive={pathname === '/'}
-                                    tooltip="Dashboard"
-                                >
+                            <SidebarMenuButton
+                                isActive={pathname === '/'}
+                                tooltip="Dashboard"
+                                asChild
+                            >
+                                <Link href="/">
                                     <LayoutGrid />
                                     Dashboard
-                                </SidebarMenuButton>
-                            </Link>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <Link href="/scan">
-                                <SidebarMenuButton isActive={pathname.startsWith('/scan')} tooltip="Scan QR Code">
+                            <SidebarMenuButton
+                                isActive={pathname.startsWith('/assets')}
+                                tooltip="Assets"
+                                asChild
+                            >
+                                <Link href="/assets">
+                                    <Package />
+                                    Assets
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton 
+                                isActive={pathname.startsWith('/scan')} 
+                                tooltip="Scan QR Code"
+                                asChild
+                            >
+                                <Link href="/scan">
                                     <QrCode />
                                     Scan QR Code
-                                </SidebarMenuButton>
-                            </Link>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         
                         <SidebarSeparator className="my-2" />
 
                         <SidebarMenuItem>
-                            <Link href="/bookings">
-                                <SidebarMenuButton isActive={pathname.startsWith('/bookings')} tooltip="Bookings">
+                            <SidebarMenuButton 
+                                isActive={pathname.startsWith('/bookings')} 
+                                tooltip="Bookings"
+                                asChild
+                            >
+                                <Link href="/bookings">
                                     <CalendarDays />
                                     Bookings
-                                </SidebarMenuButton>
-                            </Link>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <Link href="/reminders">
-                                <SidebarMenuButton isActive={pathname.startsWith('/reminders')} tooltip="Reminders">
+                            <SidebarMenuButton 
+                                isActive={pathname.startsWith('/reminders')} 
+                                tooltip="Reminders"
+                                asChild
+                            >
+                                <Link href="/reminders">
                                     <AlarmClock />
                                     Reminders
-                                </SidebarMenuButton>
-                            </Link>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
 
                         <SidebarSeparator className="my-2" />
 
                         <SidebarMenuItem>
-                            <Link href="/categories">
-                                <SidebarMenuButton isActive={pathname.startsWith('/categories')} tooltip="Categories">
+                            <SidebarMenuButton 
+                                isActive={pathname.startsWith('/categories')} 
+                                tooltip="Categories"
+                                asChild
+                            >
+                                <Link href="/categories">
                                     <LayoutList />
                                     Categories
-                                </SidebarMenuButton>
-                            </Link>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <Link href="/pools">
-                                <SidebarMenuButton isActive={pathname.startsWith('/pools')} tooltip="Pools">
+                             <SidebarMenuButton 
+                                isActive={pathname.startsWith('/pools')} 
+                                tooltip="Pools"
+                                asChild
+                            >
+                                <Link href="/pools">
                                     <Boxes />
                                     Pools
-                                </SidebarMenuButton>
-                            </Link>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <Link href="/tags">
-                                <SidebarMenuButton isActive={pathname.startsWith('/tags')} tooltip="Tags">
+                             <SidebarMenuButton 
+                                isActive={pathname.startsWith('/tags')} 
+                                tooltip="Tags"
+                                asChild
+                            >
+                                <Link href="/tags">
                                     <Tags />
                                     Tags
-                                </SidebarMenuButton>
-                            </Link>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                         <SidebarMenuItem>
-                            <Link href="/locations">
-                                <SidebarMenuButton isActive={pathname.startsWith('/locations')} tooltip="Locations">
+                            <SidebarMenuButton 
+                                isActive={pathname.startsWith('/locations')} 
+                                tooltip="Locations"
+                                asChild
+                            >
+                                <Link href="/locations">
                                     <MapPin />
                                     Locations
-                                </SidebarMenuButton>
-                            </Link>
+                                </Link>
+                            </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarContent>
