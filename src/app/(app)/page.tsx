@@ -15,6 +15,7 @@ import {
   Copy,
   ArrowUp,
   ArrowDown,
+  Upload,
 } from "lucide-react"
 import type { CheckedState } from "@radix-ui/react-checkbox"
 
@@ -161,6 +162,12 @@ export default function Dashboard() {
                     <File className="h-3.5 w-3.5" />
                     <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
                     Export
+                    </span>
+                </Button>
+                <Button size="sm" variant="outline" className="h-8 gap-1">
+                    <Upload className="h-3.5 w-3.5" />
+                    <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Import Assets
                     </span>
                 </Button>
                 <Link href="/assets/new">
