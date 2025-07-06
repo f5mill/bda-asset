@@ -3,22 +3,20 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 import {
   ChevronLeft,
-  Edit,
-  History,
-  Info,
-  MapPin,
-  MoreVertical,
-  QrCode,
+  Download,
+  Printer,
+  ExternalLink,
 } from "lucide-react"
 
 import { assets } from "@/lib/data"
 import { getBadgeVariant } from "@/lib/utils"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
+  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -29,8 +27,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { QrCodeSvg } from "@/components/qr-code-svg"
-import { Separator } from "@/components/ui/separator"
 import { ClientDate } from "@/components/client-date"
+import { Separator } from "@/components/ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+
 
 export default async function AssetDetailsPage({ params }: { params: { id: string } }) {
   const asset = assets.find((a) => a.id === params.id)
@@ -40,7 +42,7 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
   }
 
   return (
-    <div className="mx-auto grid max-w-4xl flex-1 auto-rows-max gap-4">
+    <div className="mx-auto grid max-w-6xl flex-1 auto-rows-max gap-4">
       <div className="flex items-center gap-4">
         <Link href="/">
           <Button variant="outline" size="icon" className="h-7 w-7">
@@ -48,134 +50,140 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
             <span className="sr-only">Back</span>
           </Button>
         </Link>
-        <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold font-headline tracking-tight sm:grow-0">
-          {asset.name}
-        </h1>
-        <Badge variant={getBadgeVariant(asset.status) as any} className="ml-auto sm:ml-0">
-          {asset.status}
-        </Badge>
+        <div className="flex items-baseline gap-2">
+            <h1 className="text-xl font-semibold font-headline tracking-tight">
+                {asset.name}
+            </h1>
+            <Badge variant={getBadgeVariant(asset.status) as any}>
+                {asset.status}
+            </Badge>
+        </div>
         <div className="hidden items-center gap-2 md:ml-auto md:flex">
-          <Button variant="outline" size="sm">
-            <Edit className="mr-2 h-4 w-4" />
-            Edit
-          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
+                <Button variant="outline">Actions</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem>Edit</DropdownMenuItem>
               <DropdownMenuItem>Check In/Out</DropdownMenuItem>
               <DropdownMenuItem>Assign Custodian</DropdownMenuItem>
               <DropdownMenuItem>View History</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <Button>Book</Button>
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
-        <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Info className="h-5 w-5" />
-                <CardTitle>Asset Details</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-6">
-                <div className="grid gap-3">
-                  <p className="text-muted-foreground">{asset.description}</p>
-                </div>
-                <Separator />
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-3">
-                    <div className="font-semibold">ID</div>
-                    <div className="font-mono text-sm">{asset.id}</div>
+      <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
+        <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
+              <TabsTrigger value="bookings">Bookings</TabsTrigger>
+              <TabsTrigger value="reminders">Reminders</TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview">
+               <Card className="mt-4">
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                     <div className="flex items-center justify-between border-b pb-3">
+                        <span className="text-sm text-muted-foreground">ID</span>
+                        <span className="font-mono text-sm">{asset.id}</span>
+                    </div>
+                     <div className="flex items-center justify-between border-b pb-3">
+                        <span className="text-sm text-muted-foreground">Created</span>
+                         <span className="text-sm"><ClientDate date={asset.lastScan} format="toLocaleDateString" /></span>
+                    </div>
+                     <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Category</span>
+                        <Badge variant="outline">Uncategorized</Badge>
+                    </div>
                   </div>
-                  <div className="grid gap-3">
-                    <div className="font-semibold">Custodian</div>
-                    {asset.custodian ? (
-                      <div className="flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={asset.custodian.avatarUrl} alt={asset.custodian.name} data-ai-hint="person" />
-                          <AvatarFallback>{asset.custodian.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span>{asset.custodian.name}</span>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">N/A</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <History className="h-5 w-5" />
-                <CardTitle>Recent Activity</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Last Scan</p>
-                    <p className="text-sm text-muted-foreground">{asset.location.address}</p>
-                  </div>
-                  <p className="text-sm text-muted-foreground"><ClientDate date={asset.lastScan} /></p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+               </Card>
+            </TabsContent>
+            <TabsContent value="activity">
+                <Card className="mt-4">
+                    <CardContent>
+                        <p className="p-6 text-muted-foreground">No activity to display.</p>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="bookings">
+                <Card className="mt-4">
+                    <CardContent>
+                        <p className="p-6 text-muted-foreground">No bookings to display.</p>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+            <TabsContent value="reminders">
+                <Card className="mt-4">
+                    <CardContent>
+                        <p className="p-6 text-muted-foreground">No reminders to display.</p>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+          </Tabs>
         </div>
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <QrCode className="h-5 w-5" />
-                <CardTitle>QR Code</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="p-4 bg-white rounded-md text-black aspect-square">
-                <QrCodeSvg path={`/scan?assetId=${asset.id}`} />
-              </div>
-              <p className="text-xs text-muted-foreground text-center mt-2 font-mono">{asset.qrCodeId}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                <CardTitle>Last Known Location</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="aspect-video w-full rounded-md overflow-hidden bg-muted">
-                <Image
-                  src="https://placehold.co/400x300.png"
-                  alt="Map of asset location"
-                  width={400}
-                  height={300}
-                  className="object-cover w-full h-full"
-                  data-ai-hint="map"
-                />
-              </div>
-              <p className="text-sm text-muted-foreground mt-2">{asset.location.address}</p>
-            </CardContent>
-          </Card>
+            <Card>
+                <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="font-semibold">Available for bookings</h3>
+                            <p className="text-sm text-muted-foreground">Asset is available for being used in bookings.</p>
+                        </div>
+                        <Switch id="booking-availability" />
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardContent className="p-4">
+                    <div className="p-4 bg-white rounded-md text-black aspect-square flex flex-col items-center justify-center text-center">
+                        <p className="font-bold text-lg">{asset.name}</p>
+                        <div className="w-full p-2">
+                           <QrCodeSvg path={`/scan?assetId=${asset.id}`} />
+                        </div>
+                        <p className="text-xs text-muted-foreground text-center font-mono">{asset.qrCodeId}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                        <Button variant="outline"><Download className="mr-2 h-4 w-4" />Download</Button>
+                        <Button variant="outline"><Printer className="mr-2 h-4 w-4" />Print</Button>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardContent className="p-0">
+                    <div className="aspect-video w-full rounded-t-md overflow-hidden bg-muted">
+                        <Image
+                        src="https://placehold.co/400x300.png"
+                        alt="Map of asset location"
+                        width={400}
+                        height={300}
+                        className="object-cover w-full h-full"
+                        data-ai-hint="map"
+                        />
+                    </div>
+                    <div className="p-4 space-y-2 text-sm">
+                        <div className="flex justify-between"><span className="text-muted-foreground">Date/Time</span> <ClientDate date={asset.lastScan} /></div>
+                        <div className="flex justify-between"><span className="text-muted-foreground">Coordinates</span> <span className="font-mono">{asset.location.lat.toFixed(6)}, {asset.location.lng.toFixed(6)}</span></div>
+                         <div className="flex justify-between"><span className="text-muted-foreground">Device</span> <span>Apple iPhone</span></div>
+                         <div className="flex justify-between"><span className="text-muted-foreground">Browser</span> <span>Mobile Safari</span></div>
+                         <div className="flex justify-between"><span className="text-muted-foreground">OS</span> <span>iOS</span></div>
+                         <div className="flex justify-between"><span className="text-muted-foreground">Scanned by</span> <span>Unknown</span></div>
+                         <div className="flex justify-between"><span className="text-muted-foreground">Source</span> <span>QR code scan</span></div>
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <a href={`https://www.google.com/maps?q=${asset.location.lat},${asset.location.lng}`} target="_blank" rel="noopener noreferrer" className="w-full">
+                        <Button variant="outline" className="w-full">
+                            <ExternalLink className="mr-2 h-4 w-4" />
+                            See in Google Maps
+                        </Button>
+                    </a>
+                </CardFooter>
+            </Card>
         </div>
-      </div>
-      <div className="flex items-center justify-center gap-2 md:hidden">
-        <Button variant="outline" size="sm" className="w-full">
-            Edit
-        </Button>
-        <Button size="sm" className="w-full">
-            Check In/Out
-        </Button>
       </div>
     </div>
   )
