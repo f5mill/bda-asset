@@ -120,14 +120,50 @@ function QrCodeGenerationContent() {
   )
 }
 
+function GeneralSettingsContent() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>General Settings</CardTitle>
+                <CardDescription>Manage general application settings.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground">General settings will be available here.</p>
+            </CardContent>
+        </Card>
+    )
+}
+
+function BookingsSettingsContent() {
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Booking Settings</CardTitle>
+                <CardDescription>Manage booking-related settings.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground">Booking settings will be available here.</p>
+            </CardContent>
+        </Card>
+    )
+}
+
 export default function SettingsPage() {
   return (
-    <Tabs defaultValue="qrcodes" className="w-full">
+    <Tabs defaultValue="general" className="w-full">
       <TabsList>
+        <TabsTrigger value="general">General</TabsTrigger>
         <TabsTrigger value="qrcodes">QR Codes</TabsTrigger>
+        <TabsTrigger value="bookings">Bookings</TabsTrigger>
       </TabsList>
+      <TabsContent value="general" className="mt-4">
+        <GeneralSettingsContent />
+      </TabsContent>
       <TabsContent value="qrcodes" className="mt-4">
         <QrCodeGenerationContent />
+      </TabsContent>
+      <TabsContent value="bookings" className="mt-4">
+        <BookingsSettingsContent />
       </TabsContent>
     </Tabs>
   )
