@@ -15,6 +15,7 @@ import {
   Pencil,
   Printer,
   QrCode,
+  Tag,
   Trash2,
   UserRoundPlus,
 } from "lucide-react"
@@ -102,6 +103,10 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
               <DropdownMenuItem>
                 <Pencil className="mr-2 h-4 w-4" />
                 <span>Edit</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Tag className="mr-2 h-4 w-4" />
+                <span>Show Label</span>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Copy className="mr-2 h-4 w-4" />
