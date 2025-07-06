@@ -18,7 +18,7 @@ import type { CheckedState } from "@radix-ui/react-checkbox"
 
 import { assets } from "@/lib/data"
 import { getBadgeVariant } from "@/lib/utils"
-import type { Asset, AssetStatus } from "@/lib/types"
+import type { Asset } from "@/lib/types"
 
 import {
   Card,
@@ -46,7 +46,6 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ClientDate } from "@/components/client-date"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
 import { 
     Dialog,
@@ -58,29 +57,10 @@ import { QrCodeSvg } from "@/components/qr-code-svg"
 
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = React.useState("all")
   const [selectedAssets, setSelectedAssets] = React.useState<string[]>([])
   const [showLabelAsset, setShowLabelAsset] = React.useState<Asset | null>(null)
 
-  const getFilteredAssets = (): Asset[] => {
-    if (activeTab === "all") {
-      return assets
-    }
-    const statusMap: { [key: string]: AssetStatus } = {
-        'available': 'Available',
-        'checked-out': 'Checked Out',
-        'booked': 'Booked',
-        'in-repair': 'In Repair'
-    }
-    return assets.filter(asset => asset.status === statusMap[activeTab])
-  }
-
-  const filteredAssets = getFilteredAssets()
-
-  React.useEffect(() => {
-    setSelectedAssets([]) 
-  }, [activeTab])
-
+  const filteredAssets = assets
 
   const handleSelectAll = (checked: CheckedState) => {
     if (checked === true) {
@@ -105,15 +85,6 @@ export default function Dashboard() {
   return (
     <div className="space-y-4">
         <div className="flex items-center">
-            <Tabs defaultValue="all" onValueChange={setActiveTab}>
-                <TabsList>
-                    <TabsTrigger value="all">All Assets</TabsTrigger>
-                    <TabsTrigger value="available">Available</TabsTrigger>
-                    <TabsTrigger value="checked-out">Checked Out</TabsTrigger>
-                    <TabsTrigger value="booked">Booked</TabsTrigger>
-                    <TabsTrigger value="in-repair">In Repair</TabsTrigger>
-                </TabsList>
-            </Tabs>
             <div className="ml-auto flex items-center gap-2">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
