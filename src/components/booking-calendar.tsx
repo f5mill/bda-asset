@@ -7,6 +7,7 @@ import {
   startOfDay,
   endOfDay,
   format,
+  isSameDay,
 } from "date-fns"
 import type { DayProps } from "react-day-picker"
 import Link from "next/link"
@@ -61,20 +62,39 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
       <time dateTime={date.toISOString()}>{format(date, "d")}</time>
       {bookingsForDay.length > 0 && (
         <div className="flex w-full flex-1 flex-col gap-1 overflow-hidden pt-1">
-          {bookingsForDay.slice(0, 3).map((booking) => (
-            <div
-              key={booking.id}
-              className={cn(
-                "w-full truncate rounded-sm px-1 text-left text-xs",
-                {
-                  "bg-primary text-primary-foreground": booking.status === "Active",
-                  "bg-accent text-accent-foreground": booking.status === "Upcoming"
-                }
-              )}
-            >
-             • {booking.purpose}
-            </div>
-          ))}
+          {bookingsForDay.slice(0, 3).map((booking) => {
+            const bookingStart = startOfDay(new Date(booking.startDate))
+            const bookingEnd = startOfDay(new Date(booking.endDate))
+            
+            const isStart = isSameDay(date, bookingStart)
+            const isEnd = isSameDay(date, bookingEnd)
+            // Day of week: 0 for Sunday, 1 for Monday, etc. Since weekStartsOn={1}, this works.
+            const dayOfWeek = date.getDay()
+
+            // Show title if it's the first day of the booking, or the first day of the week (Monday)
+            const showTitle = isStart || dayOfWeek === 1
+
+            return (
+              <div
+                key={booking.id}
+                className={cn(
+                  "w-full truncate text-left text-xs py-0.5",
+                  {
+                    "bg-primary text-primary-foreground": booking.status === "Active",
+                    "bg-accent text-accent-foreground": booking.status === "Upcoming"
+                  },
+                  {
+                    // Add left rounding and padding if it's the first day of booking or first day of week (Monday)
+                    "rounded-l-sm pl-1": isStart || dayOfWeek === 1,
+                    // Add right rounding if it's the last day of booking or last day of week (Sunday)
+                    "rounded-r-sm": isEnd || dayOfWeek === 0,
+                  }
+                )}
+              >
+               {showTitle ? `• ${booking.purpose}` : <>&nbsp;</>}
+              </div>
+            )
+          })}
           {bookingsForDay.length > 3 && (
             <div className="text-xs text-muted-foreground">
               + {bookingsForDay.length - 3} more
