@@ -152,9 +152,9 @@ function CalendarView({ bookings }: { bookings: Booking[] }) {
       : [];
   
     return (
-      <div className="grid md:grid-cols-2 gap-8 items-start">
+      <div className="grid md:grid-cols-[1fr_350px] gap-8 items-start">
         <Card>
-            <CardContent className="p-2">
+            <CardContent className="p-0">
                 <BookingCalendar 
                     bookings={bookings}
                     selectedDate={selectedDate}
