@@ -1,7 +1,9 @@
 
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { notFound } from "next/navigation"
 import {
   AlarmClock,
   CalendarCheck,
@@ -45,19 +47,154 @@ import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast"
+import type { Asset } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
 
 
-export default async function AssetDetailsPage({ params }: { params: { id: string } }) {
-  const asset = assets.find((a) => a.id === params.id)
+export default function AssetDetailsPage({ params }: { params: { id: string } }) {
+  const [asset, setAsset] = useState<Asset | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const assetData = assets.find((a) => a.id === params.id)
+    if (assetData) {
+      setAsset(JSON.parse(JSON.stringify(assetData)))
+    }
+    setIsLoading(false);
+  }, [params.id])
+  
+  const handleUpdateGps = () => {
+    setIsProcessing(true);
+
+    if (!navigator.geolocation) {
+      toast({
+        variant: 'destructive',
+        title: 'Geolocation not supported',
+        description: 'Your browser does not support geolocation.',
+      });
+      setIsProcessing(false);
+      return;
+    }
+
+    const onSuccess = async (position: GeolocationPosition) => {
+      try {
+        const { latitude, longitude } = position.coords;
+        const response = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch address from geocoding service.');
+        }
+        const data = await response.json();
+        const newLocation = data.locality && data.principalSubdivision 
+            ? `${data.locality}, ${data.principalSubdivision}` 
+            : `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+
+        setAsset((prevAsset) => {
+          if (!prevAsset) return null;
+          // In a real app, this would also trigger a database update.
+          return {
+            ...prevAsset,
+            location: {
+              ...prevAsset.location,
+              lat: latitude,
+              lng: longitude,
+              address: newLocation,
+            },
+            lastScan: new Date().toISOString(),
+          };
+        });
+
+        toast({
+          title: 'Location Updated',
+          description: `Asset location has been updated to: ${newLocation}`,
+        });
+      } catch (apiError: any) {
+        toast({
+          variant: 'destructive',
+          title: 'Geocoding Error',
+          description: apiError.message || 'Could not fetch address data.',
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    const onError = (error: GeolocationPositionError) => {
+      let title = 'Geolocation Error';
+      let description = 'Could not get your location.';
+
+      switch (error.code) {
+        case error.PERMISSION_DENIED:
+          description = 'You denied the request for Geolocation.';
+          break;
+        case error.POSITION_UNAVAILABLE:
+          description = 'Location information is unavailable.';
+          break;
+        case error.TIMEOUT:
+          description = 'The request to get user location timed out.';
+          break;
+      }
+      toast({ variant: 'destructive', title, description });
+      setIsProcessing(false);
+    };
+
+    navigator.geolocation.getCurrentPosition(onSuccess, onError, {
+      enableHighAccuracy: true,
+      timeout: 10000,
+      maximumAge: 0,
+    });
+  };
+  
+  if (isLoading) {
+    return (
+      <div className="mx-auto grid max-w-6xl flex-1 auto-rows-max gap-4">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-7 w-7 rounded-full" />
+          <Skeleton className="h-6 w-40" />
+        </div>
+        <div className="grid gap-8 lg:grid-cols-[1fr_350px]">
+          <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+            <Skeleton className="h-96 w-full" />
+          </div>
+          <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+            <Skeleton className="h-96 w-full" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!asset) {
-    notFound()
+    return (
+      <div className="mx-auto grid max-w-6xl flex-1 auto-rows-max gap-4">
+      <div className="flex items-center gap-4">
+        <Link href="/assets">
+          <Button variant="outline" size="icon" className="h-7 w-7">
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Back</span>
+          </Button>
+        </Link>
+        <h1 className="text-xl font-semibold font-headline tracking-tight">
+            Asset Not Found
+        </h1>
+      </div>
+      <Card>
+          <CardContent>
+              <p className="p-6 text-muted-foreground">The asset you are looking for does not exist.</p>
+          </CardContent>
+      </Card>
+    </div>
+    )
   }
 
   return (
     <div className="mx-auto grid max-w-6xl flex-1 auto-rows-max gap-4">
       <div className="flex items-center gap-4">
-        <Link href="/">
+        <Link href="/assets">
           <Button variant="outline" size="icon" className="h-7 w-7">
             <ChevronLeft className="h-4 w-4" />
             <span className="sr-only">Back</span>
@@ -85,9 +222,9 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
                 <MapPin className="mr-2 h-4 w-4" />
                 <span>Update location</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleUpdateGps} disabled={isProcessing}>
                 <Crosshair className="mr-2 h-4 w-4" />
-                <span>Update GPS coordinates</span>
+                <span>{isProcessing ? "Updating..." : "Update GPS coordinates"}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
@@ -233,7 +370,7 @@ export default async function AssetDetailsPage({ params }: { params: { id: strin
                          <div className="flex justify-between"><span className="text-muted-foreground">Device</span> <span>Apple iPhone</span></div>
                          <div className="flex justify-between"><span className="text-muted-foreground">Browser</span> <span>Mobile Safari</span></div>
                          <div className="flex justify-between"><span className="text-muted-foreground">OS</span> <span>iOS</span></div>
-                         <div className="flex justify-between"><span className="text-muted-foreground">Scanned by</span> <span>Unknown</span></div>
+                         <div className="flex justify-between"><span className="text-muted-foreground">Scanned by</span> <span>{ asset.custodian?.name || 'Unknown' }</span></div>
                          <div className="flex justify-between"><span className="text-muted-foreground">Source</span> <span>QR code scan</span></div>
                     </div>
                 </CardContent>

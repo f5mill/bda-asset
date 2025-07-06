@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Camera, MapPin } from "lucide-react"
+import { Camera } from "lucide-react"
 
 import { assets } from "@/lib/data"
 import type { Asset } from "@/lib/types"
@@ -24,8 +24,6 @@ export default function ScanPage() {
   
   const [assetId, setAssetId] = useState<string | null>(null)
   const [scannedAsset, setScannedAsset] = useState<Asset | null>(null)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [updatedLocation, setUpdatedLocation] = useState<string | null>(null)
 
   useEffect(() => {
     const id = searchParams.get('assetId')
@@ -33,7 +31,7 @@ export default function ScanPage() {
       setAssetId(id)
       const assetData = assets.find((a) => a.id === id)
       if (assetData) {
-        setScannedAsset(JSON.parse(JSON.stringify(assetData))) // Deep copy to allow modification
+        setScannedAsset(assetData)
       } else {
         setScannedAsset(null)
         toast({
@@ -44,92 +42,6 @@ export default function ScanPage() {
       }
     }
   }, [searchParams, toast])
-
-  const handleUpdateLocation = () => {
-    setIsProcessing(true);
-
-    if (!navigator.geolocation) {
-      toast({
-        variant: 'destructive',
-        title: 'Geolocation not supported',
-        description: 'Your browser does not support geolocation.',
-      });
-      setIsProcessing(false);
-      return;
-    }
-
-    const onSuccess = async (position: GeolocationPosition) => {
-      try {
-        const { latitude, longitude } = position.coords;
-        // Using a different, reliable geocoding service
-        const response = await fetch(
-          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-        );
-        if (!response.ok) {
-          throw new Error('Failed to fetch address from geocoding service.');
-        }
-        const data = await response.json();
-        const newLocation = data.locality && data.principalSubdivision 
-            ? `${data.locality}, ${data.principalSubdivision}` 
-            : `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
-
-        if (scannedAsset) {
-          setScannedAsset((prevAsset) => {
-            if (!prevAsset) return null;
-            return {
-              ...prevAsset,
-              location: {
-                ...prevAsset.location,
-                lat: latitude,
-                lng: longitude,
-                address: newLocation,
-              },
-              lastScan: new Date().toISOString(),
-            };
-          });
-          setUpdatedLocation(newLocation);
-        }
-
-        toast({
-          title: 'Location Updated',
-          description: `Asset location has been updated to: ${newLocation}`,
-        });
-      } catch (apiError: any) {
-        toast({
-          variant: 'destructive',
-          title: 'Geocoding Error',
-          description: apiError.message || 'Could not fetch address data.',
-        });
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
-    const onError = (error: GeolocationPositionError) => {
-      let title = 'Geolocation Error';
-      let description = 'Could not get your location.';
-
-      switch (error.code) {
-        case error.PERMISSION_DENIED:
-          description = 'You denied the request for Geolocation.';
-          break;
-        case error.POSITION_UNAVAILABLE:
-          description = 'Location information is unavailable.';
-          break;
-        case error.TIMEOUT:
-          description = 'The request to get user location timed out.';
-          break;
-      }
-      toast({ variant: 'destructive', title, description });
-      setIsProcessing(false);
-    };
-
-    navigator.geolocation.getCurrentPosition(onSuccess, onError, {
-      enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 0,
-    });
-  };
 
   if (!assetId) {
     return (
@@ -190,15 +102,11 @@ export default function ScanPage() {
                 <p><span className="font-semibold">Custodian:</span> {scannedAsset.custodian?.name || 'N/A'}</p>
                 <p className="text-sm text-muted-foreground pt-2">
                     <span className="font-semibold">Last known location:</span><br/>
-                    {updatedLocation || scannedAsset.location.address}
+                    {scannedAsset.location.address}
                 </p>
             </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-            <Button onClick={handleUpdateLocation} disabled={isProcessing} className="w-full">
-                <MapPin className="mr-2 h-4 w-4" />
-                {isProcessing ? "Updating..." : "Update Location"}
-            </Button>
             <Link href={`/assets/${scannedAsset.id}`} className="w-full">
               <Button variant="outline" className="w-full">
                 View Full Details
