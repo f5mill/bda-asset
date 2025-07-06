@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation"
 import {
     LayoutGrid,
     QrCode,
-    PlusSquare,
     Bell,
     Settings,
     Tags,
@@ -51,12 +50,12 @@ export default function AppLayout({
     const getPageTitle = (path: string) => {
         if (path === '/') return 'Dashboard'
         if (path === '/scan') return 'Scan QR Code'
-        if (path === '/qrcodes') return 'Generate QR Codes'
         if (path === '/bookings') return 'Bookings'
         if (path === '/reminders') return 'Reminders'
         if (path === '/categories') return 'Categories'
         if (path === '/tags') return 'Tags'
         if (path === '/locations') return 'Locations'
+        if (path.startsWith('/settings')) return 'Settings'
         if (path.startsWith('/assets/new')) return 'Register New Asset'
         if (path.startsWith('/assets/')) return 'Asset Details'
         return 'Dashboard'
@@ -84,12 +83,6 @@ export default function AppLayout({
                             <SidebarMenuButton href="/scan" isActive={pathname.startsWith('/scan')} tooltip="Scan QR Code">
                                 <QrCode />
                                 Scan QR Code
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-                        <SidebarMenuItem>
-                            <SidebarMenuButton href="/qrcodes" isActive={pathname.startsWith('/qrcodes')} tooltip="Generate QR Codes">
-                                <PlusSquare />
-                                Generate QR Codes
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         
@@ -155,9 +148,11 @@ export default function AppLayout({
                                 </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem>
-                                    <Settings className="mr-2 h-4 w-4" />
-                                    <span>Settings</span>
+                                <DropdownMenuItem asChild>
+                                    <Link href="/settings">
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        <span>Settings</span>
+                                    </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem>
