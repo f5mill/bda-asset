@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { FileDown, PlusCircle, Search, UserPlus, MoreHorizontal, Printer } from "lucide-react"
+import { FileDown, PlusCircle, Search, UserPlus, MoreHorizontal, Printer, Trash2, Eye } from "lucide-react"
 
 import {
   Card,
@@ -34,6 +34,16 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
@@ -42,23 +52,24 @@ import { QrCodeSvg } from "@/components/qr-code-svg"
 import { ClientDate } from "@/components/client-date"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const initialGeneratedQRCodes = [
-  { id: "QR-G1H2I3", createdAt: "2023-11-01T10:00:00Z", assignedTo: "ASSET-005" },
-  { id: "QR-J4K5L6", createdAt: "2023-11-01T10:00:00Z", assignedTo: null },
-  { id: "QR-M7N8P9", createdAt: "2023-11-01T10:00:00Z", assignedTo: null },
-  { id: "QR-Q1R2S3", createdAt: "2023-10-31T15:20:00Z", assignedTo: "ASSET-002" },
-  { id: "QR-T4U5V6", createdAt: "2023-10-31T15:20:00Z", assignedTo: "ASSET-001" },
-  { id: "QR-A1B2C4", createdAt: "2023-11-02T10:00:00Z", assignedTo: null },
-  { id: "QR-D4E5F7", createdAt: "2023-11-02T10:00:00Z", assignedTo: null },
-  { id: "QR-G7H8I0", createdAt: "2023-11-03T11:00:00Z", assignedTo: "ASSET-003" },
-  { id: "QR-J1K2L4", createdAt: "2023-11-03T11:00:00Z", assignedTo: null },
-  { id: "QR-M4N5P7", createdAt: "2023-11-04T12:00:00Z", assignedTo: null },
-  { id: "QR-Q1R2S4", createdAt: "2023-11-04T12:00:00Z", assignedTo: "ASSET-004" },
-  { id: "QR-T4U5V7", createdAt: "2023-11-05T13:00:00Z", assignedTo: null },
-  { id: "QR-X7Y8Z9", createdAt: "2023-11-05T13:00:00Z", assignedTo: null },
-  { id: "QR-1A2B3C", createdAt: "2023-11-06T14:00:00Z", assignedTo: null },
-  { id: "QR-4D5E6F", createdAt: "2023-11-06T14:00:00Z", assignedTo: null },
-].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+type QRBatch = {
+  id: string;
+  createdAt: string;
+  quantity: number;
+  codes: { id: string; assignedTo: string | null }[];
+};
+
+const initialBatches: QRBatch[] = [
+  { id: 'BATCH-001', createdAt: '2023-11-06T14:00:00Z', quantity: 2, codes: [ { id: 'QR-1A2B3C', assignedTo: null }, { id: 'QR-4D5E6F', assignedTo: null } ] },
+  { id: 'BATCH-002', createdAt: '2023-11-05T13:00:00Z', quantity: 2, codes: [ { id: 'QR-T4U5V7', assignedTo: null }, { id: 'QR-X7Y8Z9', assignedTo: null } ] },
+  { id: 'BATCH-003', createdAt: '2023-11-04T12:00:00Z', quantity: 2, codes: [ { id: 'QR-M4N5P7', assignedTo: null }, { id: 'QR-Q1R2S4', assignedTo: 'ASSET-004' } ] },
+  { id: 'BATCH-004', createdAt: '2023-11-03T11:00:00Z', quantity: 2, codes: [ { id: 'QR-G7H8I0', assignedTo: 'ASSET-003' }, { id: 'QR-J1K2L4', assignedTo: null } ] },
+  { id: 'BATCH-005', createdAt: '2023-11-02T10:00:00Z', quantity: 2, codes: [ { id: 'QR-A1B2C4', assignedTo: null }, { id: 'QR-D4E5F7', assignedTo: null } ] },
+  { id: 'BATCH-006', createdAt: '2023-11-01T10:00:00Z', quantity: 3, codes: [ { id: 'QR-G1H2I3', assignedTo: 'ASSET-005' }, { id: 'QR-J4K5L6', assignedTo: null }, { id: 'QR-M7N8P9', assignedTo: null } ] },
+  { id: 'BATCH-007', createdAt: '2023-10-31T15:20:00Z', quantity: 2, codes: [ { id: 'QR-Q1R2S3', assignedTo: 'ASSET-002' }, { id: 'QR-T4U5V6', assignedTo: 'ASSET-001' } ] },
+];
+
 
 const pendingInvites = [
   { id: "INV-001", email: "sara.n@example.com", sentAt: "2023-11-15T10:00:00Z", role: "Admin" },
@@ -67,38 +78,67 @@ const pendingInvites = [
 ];
 
 function QrCodeGenerationContent() {
-    const [codes, setCodes] = useState(initialGeneratedQRCodes);
+    const [batches, setBatches] = useState<QRBatch[]>(initialBatches);
     const [quantity, setQuantity] = useState(20);
-    const [newBatch, setNewBatch] = useState<any[]>([]);
+    const [batchToPrint, setBatchToPrint] = useState<QRBatch | null>(null);
+    const [batchToView, setBatchToView] = useState<QRBatch | null>(null);
+    const [batchToDelete, setBatchToDelete] = useState<QRBatch | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
-    const [dialogCurrentPage, setDialogCurrentPage] = useState(1);
+    const BATCHES_PER_PAGE = 5;
     
-    const CODES_PER_PAGE = 10;
-    const DIALOG_CODES_PER_PAGE = 10; // For a 5-column grid, this is 2 rows
+    const [viewCodesCurrentPage, setViewCodesCurrentPage] = useState(1);
+    const CODES_PER_PAGE_VIEW = 10;
+    
+    const [dialogCurrentPage, setDialogCurrentPage] = useState(1);
+    const DIALOG_CODES_PER_PAGE = 10;
 
-    // Main table pagination logic
-    const indexOfLastCode = currentPage * CODES_PER_PAGE;
-    const indexOfFirstCode = indexOfLastCode - CODES_PER_PAGE;
-    const currentCodes = codes.slice(indexOfFirstCode, indexOfLastCode);
-    const totalPages = Math.ceil(codes.length / CODES_PER_PAGE);
+    // Main table pagination
+    const indexOfLastBatch = currentPage * BATCHES_PER_PAGE;
+    const indexOfFirstBatch = indexOfLastBatch - BATCHES_PER_PAGE;
+    const currentBatches = batches.slice(indexOfFirstBatch, indexOfLastBatch);
+    const totalPages = Math.ceil(batches.length / BATCHES_PER_PAGE);
 
-    // Dialog pagination logic
-    const indexOfLastDialogCode = dialogCurrentPage * DIALOG_CODES_PER_PAGE;
-    const indexOfFirstDialogCode = indexOfLastDialogCode - DIALOG_CODES_PER_PAGE;
-    const currentDialogCodes = newBatch.slice(indexOfFirstDialogCode, indexOfLastDialogCode);
-    const totalDialogPages = Math.ceil(newBatch.length / DIALOG_CODES_PER_PAGE);
+    // View Codes Dialog pagination
+    const totalViewCodesPages = batchToView ? Math.ceil(batchToView.codes.length / CODES_PER_PAGE_VIEW) : 0;
+    const currentViewCodes = batchToView?.codes.slice(
+        (viewCodesCurrentPage - 1) * CODES_PER_PAGE_VIEW,
+        viewCodesCurrentPage * CODES_PER_PAGE_VIEW
+    );
+
+    // Print Dialog pagination
+    const codesToPaginate = batchToPrint?.codes || [];
+    const totalDialogPages = Math.ceil(codesToPaginate.length / DIALOG_CODES_PER_PAGE);
+    const currentDialogCodes = codesToPaginate.slice(
+        (dialogCurrentPage - 1) * DIALOG_CODES_PER_PAGE,
+        dialogCurrentPage * DIALOG_CODES_PER_PAGE
+    );
 
     const handleGenerateBatch = () => {
-      const batch = Array.from({ length: quantity }, () => {
-        const id = `QR-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
-        return { id, createdAt: new Date().toISOString(), assignedTo: null };
-      });
-      setNewBatch(batch);
-      setCodes(prev => [...batch, ...prev].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-      setCurrentPage(1); // Go to first page to see new codes
-      setDialogCurrentPage(1); // Reset dialog to first page
+        const newCodes = Array.from({ length: quantity }, () => ({
+            id: `QR-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
+            assignedTo: null,
+        }));
+        
+        const newBatch: QRBatch = {
+            id: `BATCH-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
+            createdAt: new Date().toISOString(),
+            quantity: quantity,
+            codes: newCodes,
+        };
+      
+        setBatches(prev => [newBatch, ...prev]);
+        setBatchToPrint(newBatch);
+        setCurrentPage(1);
+        setDialogCurrentPage(1);
     };
+
+    const handleDeleteBatch = () => {
+        if (batchToDelete) {
+            setBatches(batches.filter(b => b.id !== batchToDelete.id));
+            setBatchToDelete(null);
+        }
+    }
 
     const handlePrint = () => {
       window.print();
@@ -110,66 +150,78 @@ function QrCodeGenerationContent() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle className="font-headline">Generated QR Codes</CardTitle>
+              <CardTitle className="font-headline">QR Code Batches</CardTitle>
               <CardDescription>
-                Manage, print, and assign QR codes to your assets.
+                Manage, print, and assign QR codes from generated batches.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between gap-4 mb-6">
                 <div className="relative w-full max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search QR codes..." className="pl-9" />
+                  <Input placeholder="Search batches..." className="pl-9" />
                 </div>
-                <Button variant="outline">
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Export Unassigned
-                </Button>
               </div>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-20">Preview</TableHead>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created At</TableHead>
+                    <TableHead>Batch ID</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead>Assigned</TableHead>
                     <TableHead>
                       <span className="sr-only">Actions</span>
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {currentCodes.map((code) => (
-                    <TableRow key={code.id}>
-                      <TableCell>
-                        <div className="w-10 h-10 p-1 bg-white rounded-md text-black">
-                          <QrCodeSvg path={`/scan?id=${code.id}`} />
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-mono text-sm">{code.id}</TableCell>
-                      <TableCell>
-                        {code.assignedTo ? (
-                          <Badge variant="secondary">Assigned</Badge>
-                        ) : (
-                          <Badge>Unassigned</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <ClientDate date={code.createdAt} format="toLocaleDateString" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="outline" size="sm" disabled={!!code.assignedTo}>
-                          Assign to Asset
-                        </Button>
-                      </TableCell>
+                  {currentBatches.length > 0 ? currentBatches.map((batch) => {
+                    const assignedCount = batch.codes.filter(c => c.assignedTo).length;
+                    return (
+                        <TableRow key={batch.id}>
+                            <TableCell className="font-mono text-sm">{batch.id}</TableCell>
+                            <TableCell><ClientDate date={batch.createdAt} format="toLocaleDateString" /></TableCell>
+                            <TableCell>{batch.quantity}</TableCell>
+                            <TableCell>{assignedCount} / {batch.quantity}</TableCell>
+                            <TableCell className="text-right">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button aria-haspopup="true" size="icon" variant="ghost">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            <span className="sr-only">Toggle menu</span>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onSelect={() => { setBatchToView(batch); setViewCodesCurrentPage(1); }}>
+                                            <Eye className="mr-2 h-4 w-4" />
+                                            View Codes
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onSelect={() => { setBatchToPrint(batch); setDialogCurrentPage(1); }}>
+                                            <Printer className="mr-2 h-4 w-4" />
+                                            Print Batch
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="text-destructive" onSelect={() => setBatchToDelete(batch)}>
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete Batch
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </TableCell>
+                        </TableRow>
+                    )
+                  }) : (
+                    <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                            No batches found.
+                        </TableCell>
                     </TableRow>
-                  ))}
+                  )}
                 </TableBody>
               </Table>
               {totalPages > 1 && (
                 <div className="flex items-center justify-between pt-4">
                   <div className="text-sm text-muted-foreground">
-                    Showing {currentCodes.length > 0 ? indexOfFirstCode + 1 : 0} to {Math.min(indexOfLastCode, codes.length)} of {codes.length} codes.
+                    Showing {currentBatches.length > 0 ? indexOfFirstBatch + 1 : 0} to {Math.min(indexOfLastBatch, batches.length)} of {batches.length} batches.
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button
@@ -202,7 +254,7 @@ function QrCodeGenerationContent() {
             <CardHeader>
               <CardTitle className="font-headline">Bulk Generate</CardTitle>
               <CardDescription>
-                Create multiple new QR codes at once.
+                Create a new batch of QR codes.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -219,12 +271,12 @@ function QrCodeGenerationContent() {
         </div>
       </div>
 
-      <Dialog open={newBatch.length > 0} onOpenChange={(isOpen) => !isOpen && setNewBatch([])}>
+      <Dialog open={!!batchToPrint} onOpenChange={(isOpen) => !isOpen && setBatchToPrint(null)}>
         <DialogContent className="max-w-4xl">
             <div id="printable">
                 <DialogHeader>
-                    <DialogTitle>Generated QR Code Batch</DialogTitle>
-                    <DialogDescription className="no-print">A batch of {newBatch.length} QR codes has been generated and added to your library. You can print them now.</DialogDescription>
+                    <DialogTitle>Print Batch: {batchToPrint?.id}</DialogTitle>
+                    <DialogDescription className="no-print">A batch of {batchToPrint?.quantity} QR codes has been generated. You can print them now.</DialogDescription>
                 </DialogHeader>
                 <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {currentDialogCodes.map((code) => (
@@ -273,6 +325,98 @@ function QrCodeGenerationContent() {
             </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!batchToView} onOpenChange={(isOpen) => !isOpen && setBatchToView(null)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Codes in Batch: {batchToView?.id}</DialogTitle>
+            <DialogDescription>
+              Viewing {batchToView?.codes.length} codes. Unassigned codes can be linked to new assets.
+            </DialogDescription>
+          </DialogHeader>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                    <TableHead className="w-20">Preview</TableHead>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>
+                        <span className="sr-only">Actions</span>
+                    </TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentViewCodes?.map((code) => (
+                    <TableRow key={code.id}>
+                        <TableCell>
+                        <div className="w-10 h-10 p-1 bg-white rounded-md text-black">
+                            <QrCodeSvg path={`/scan?id=${code.id}`} />
+                        </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-sm">{code.id}</TableCell>
+                        <TableCell>
+                        {code.assignedTo ? (
+                            <Badge variant="secondary">Assigned</Badge>
+                        ) : (
+                            <Badge>Unassigned</Badge>
+                        )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                        <Button variant="outline" size="sm" disabled={!!code.assignedTo}>
+                            Assign to Asset
+                        </Button>
+                        </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+            </Table>
+            {totalViewCodesPages > 1 && (
+                <div className="flex items-center justify-between pt-4">
+                  <div className="text-sm text-muted-foreground">
+                    Page {viewCodesCurrentPage} of {totalViewCodesPages}
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setViewCodesCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={viewCodesCurrentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setViewCodesCurrentPage((prev) => Math.min(prev + 1, totalViewCodesPages))}
+                      disabled={viewCodesCurrentPage === totalViewCodesPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+            )}
+          <DialogFooter className="pt-6">
+            <DialogClose asChild>
+                <Button variant="outline">Close</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      <AlertDialog open={!!batchToDelete} onOpenChange={(isOpen) => !isOpen && setBatchToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This will permanently delete batch <span className="font-mono font-medium">{batchToDelete?.id}</span> and its {batchToDelete?.quantity} QR codes. This action cannot be undone.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteBatch}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
