@@ -2,6 +2,7 @@
 "use client"
 
 import { useState } from "react";
+import Link from "next/link";
 import { PlusCircle, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { locations as initialLocations } from "@/lib/data";
+import { locations as initialLocations, assets } from "@/lib/data";
 import type { Location } from "@/lib/types";
 
 export default function LocationsPage() {
@@ -112,6 +113,11 @@ export default function LocationsPage() {
     }
   }
 
+  const locationsWithAssetCounts = locations.map(location => ({
+    ...location,
+    assetCount: assets.filter(asset => asset.assignedLocation === location.name).length
+  }));
+
   return (
     <>
       <Card>
@@ -135,19 +141,23 @@ export default function LocationsPage() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Address</TableHead>
-                <TableHead>Description</TableHead>
+                <TableHead>Assets</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {locations.length > 0 ? (
-                locations.map((location) => (
+              {locationsWithAssetCounts.length > 0 ? (
+                locationsWithAssetCounts.map((location) => (
                   <TableRow key={location.id}>
-                    <TableCell className="font-medium">{location.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <Link href={`/locations/${location.id}`} className="hover:underline">
+                        {location.name}
+                      </Link>
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{location.address || "N/A"}</TableCell>
-                    <TableCell className="text-muted-foreground">{location.description || "N/A"}</TableCell>
+                    <TableCell className="text-muted-foreground">{location.assetCount}</TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
