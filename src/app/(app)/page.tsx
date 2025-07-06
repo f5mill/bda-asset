@@ -75,9 +75,6 @@ export default function Dashboard() {
                 <TableRow key={asset.id}>
                   <TableCell>
                     <Link href={`/assets/${asset.id}`} className="font-medium hover:underline">{asset.name}</Link>
-                    <div className="hidden text-sm text-muted-foreground md:inline">
-                      {asset.description}
-                    </div>
                   </TableCell>
                   <TableCell>
                     <Badge variant={getBadgeVariant(asset.status) as any}>
