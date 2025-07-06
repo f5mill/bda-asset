@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState } from "react"
@@ -47,7 +48,17 @@ const initialGeneratedQRCodes = [
   { id: "QR-M7N8P9", createdAt: "2023-11-01T10:00:00Z", assignedTo: null },
   { id: "QR-Q1R2S3", createdAt: "2023-10-31T15:20:00Z", assignedTo: "ASSET-002" },
   { id: "QR-T4U5V6", createdAt: "2023-10-31T15:20:00Z", assignedTo: "ASSET-001" },
-];
+  { id: "QR-A1B2C4", createdAt: "2023-11-02T10:00:00Z", assignedTo: null },
+  { id: "QR-D4E5F7", createdAt: "2023-11-02T10:00:00Z", assignedTo: null },
+  { id: "QR-G7H8I0", createdAt: "2023-11-03T11:00:00Z", assignedTo: "ASSET-003" },
+  { id: "QR-J1K2L4", createdAt: "2023-11-03T11:00:00Z", assignedTo: null },
+  { id: "QR-M4N5P7", createdAt: "2023-11-04T12:00:00Z", assignedTo: null },
+  { id: "QR-Q1R2S4", createdAt: "2023-11-04T12:00:00Z", assignedTo: "ASSET-004" },
+  { id: "QR-T4U5V7", createdAt: "2023-11-05T13:00:00Z", assignedTo: null },
+  { id: "QR-X7Y8Z9", createdAt: "2023-11-05T13:00:00Z", assignedTo: null },
+  { id: "QR-1A2B3C", createdAt: "2023-11-06T14:00:00Z", assignedTo: null },
+  { id: "QR-4D5E6F", createdAt: "2023-11-06T14:00:00Z", assignedTo: null },
+].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
 const pendingInvites = [
   { id: "INV-001", email: "sara.n@example.com", sentAt: "2023-11-15T10:00:00Z", role: "Admin" },
@@ -60,13 +71,33 @@ function QrCodeGenerationContent() {
     const [quantity, setQuantity] = useState(20);
     const [newBatch, setNewBatch] = useState<any[]>([]);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [dialogCurrentPage, setDialogCurrentPage] = useState(1);
+    
+    const CODES_PER_PAGE = 10;
+    const DIALOG_CODES_PER_PAGE = 10; // For a 5-column grid, this is 2 rows
+
+    // Main table pagination logic
+    const indexOfLastCode = currentPage * CODES_PER_PAGE;
+    const indexOfFirstCode = indexOfLastCode - CODES_PER_PAGE;
+    const currentCodes = codes.slice(indexOfFirstCode, indexOfLastCode);
+    const totalPages = Math.ceil(codes.length / CODES_PER_PAGE);
+
+    // Dialog pagination logic
+    const indexOfLastDialogCode = dialogCurrentPage * DIALOG_CODES_PER_PAGE;
+    const indexOfFirstDialogCode = indexOfLastDialogCode - DIALOG_CODES_PER_PAGE;
+    const currentDialogCodes = newBatch.slice(indexOfFirstDialogCode, indexOfLastDialogCode);
+    const totalDialogPages = Math.ceil(newBatch.length / DIALOG_CODES_PER_PAGE);
+
     const handleGenerateBatch = () => {
       const batch = Array.from({ length: quantity }, () => {
         const id = `QR-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
         return { id, createdAt: new Date().toISOString(), assignedTo: null };
       });
       setNewBatch(batch);
-      setCodes(prev => [...batch, ...prev]);
+      setCodes(prev => [...batch, ...prev].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      setCurrentPage(1); // Go to first page to see new codes
+      setDialogCurrentPage(1); // Reset dialog to first page
     };
 
     const handlePrint = () => {
@@ -108,7 +139,7 @@ function QrCodeGenerationContent() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {codes.map((code) => (
+                  {currentCodes.map((code) => (
                     <TableRow key={code.id}>
                       <TableCell>
                         <div className="w-10 h-10 p-1 bg-white rounded-md text-black">
@@ -135,6 +166,34 @@ function QrCodeGenerationContent() {
                   ))}
                 </TableBody>
               </Table>
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between pt-4">
+                  <div className="text-sm text-muted-foreground">
+                    Showing {currentCodes.length > 0 ? indexOfFirstCode + 1 : 0} to {Math.min(indexOfLastCode, codes.length)} of {codes.length} codes.
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-sm font-medium">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -149,7 +208,7 @@ function QrCodeGenerationContent() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="quantity">Quantity</Label>
-                <Input id="quantity" type="number" value={quantity} onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value, 10) || 0))} />
+                <Input id="quantity" type="number" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value, 10) || 1))} />
               </div>
               <Button className="w-full" onClick={handleGenerateBatch}>
                 <PlusCircle className="mr-2 h-4 w-4" />
@@ -168,7 +227,7 @@ function QrCodeGenerationContent() {
                     <DialogDescription className="no-print">A batch of {newBatch.length} QR codes has been generated and added to your library. You can print them now.</DialogDescription>
                 </DialogHeader>
                 <div className="p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                    {newBatch.map((code) => (
+                    {currentDialogCodes.map((code) => (
                         <div key={code.id} className="p-2 bg-white rounded-md text-black flex flex-col items-center justify-center text-center border break-inside-avoid">
                             <p className="font-bold text-sm font-mono">{code.id}</p>
                             <div className="w-24 h-24 p-1 mx-auto">
@@ -178,7 +237,32 @@ function QrCodeGenerationContent() {
                     ))}
                 </div>
             </div>
-            <DialogFooter className="no-print">
+            {totalDialogPages > 1 && (
+                <div className="no-print flex items-center justify-between px-6">
+                    <div className="text-sm text-muted-foreground">
+                        Page {dialogCurrentPage} of {totalDialogPages}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDialogCurrentPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={dialogCurrentPage === 1}
+                        >
+                            Previous
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setDialogCurrentPage((prev) => Math.min(prev + 1, totalDialogPages))}
+                            disabled={dialogCurrentPage === totalDialogPages}
+                        >
+                            Next
+                        </Button>
+                    </div>
+                </div>
+            )}
+            <DialogFooter className="no-print pt-6">
                 <DialogClose asChild>
                     <Button variant="outline">Close</Button>
                 </DialogClose>
