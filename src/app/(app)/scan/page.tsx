@@ -45,75 +45,92 @@ export default function ScanPage() {
     }
   }, [searchParams, toast])
 
-  const handleUpdateLocation = () => {
-    setIsProcessing(true)
-
+  const handleUpdateLocation = async () => {
+    setIsProcessing(true);
+    
     if (!navigator.geolocation) {
       toast({
         variant: "destructive",
         title: "Geolocation not supported",
         description: "Your browser does not support geolocation.",
-      })
-      setIsProcessing(false)
-      return
+      });
+      setIsProcessing(false);
+      return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords
-          
-          const response = await fetch(`https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}`);
-          if (!response.ok) {
-            throw new Error('Failed to fetch address from geocoding service.');
-          }
-          const data = await response.json();
-          
-          const newLocation = data.display_name || `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000, // 10 seconds
+            maximumAge: 0,
+        });
+      });
 
-          if (scannedAsset) {
-            // This only updates the state locally. A real app would send this to a server.
-            setScannedAsset(prevAsset => {
-              if (!prevAsset) return null
-              return {
-                ...prevAsset,
-                location: {
-                  ...prevAsset.location,
-                  lat: latitude,
-                  lng: longitude,
-                  address: newLocation,
-                },
-                lastScan: new Date().toISOString(),
-              }
-            })
-            setUpdatedLocation(newLocation)
-          }
-
-          toast({
-            title: "Location Updated",
-            description: `Asset location has been updated to your current position.`,
-          })
-        } catch (error) {
-          console.error(error);
-          toast({
-            variant: "destructive",
-            title: "Could not get address",
-            description: "Failed to retrieve a street address for your current location.",
-          })
-        } finally {
-          setIsProcessing(false)
-        }
-      },
-      (error) => {
-        toast({
-          variant: "destructive",
-          title: "Geolocation Error",
-          description: error.message,
-        })
-        setIsProcessing(false)
+      const { latitude, longitude } = position.coords;
+      
+      const response = await fetch(`https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch address from geocoding service.');
       }
-    )
-  }
+      const data = await response.json();
+      
+      const newLocation = data.display_name || `Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`;
+
+      if (scannedAsset) {
+        // This only updates the state locally. A real app would send this to a server.
+        setScannedAsset(prevAsset => {
+          if (!prevAsset) return null;
+          return {
+            ...prevAsset,
+            location: {
+              ...prevAsset.location,
+              lat: latitude,
+              lng: longitude,
+              address: newLocation,
+            },
+            lastScan: new Date().toISOString(),
+          };
+        });
+        setUpdatedLocation(newLocation);
+      }
+
+      toast({
+        title: "Location Updated",
+        description: `Asset location has been updated to your current position.`,
+      });
+
+    } catch (error: any) {
+      let title = "An error occurred";
+      let description = "Could not update location.";
+
+      if (error.code) {
+        title = "Geolocation Error";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            description = "You denied the request for Geolocation.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            description = "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            description = "The request to get user location timed out.";
+            break;
+        }
+      } else if (error.message) {
+          description = error.message
+      }
+      
+      toast({
+        variant: "destructive",
+        title: title,
+        description: description,
+      });
+      console.error(error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   if (!assetId) {
     return (
