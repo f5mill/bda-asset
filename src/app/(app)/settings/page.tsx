@@ -148,6 +148,22 @@ function BookingsSettingsContent() {
     )
 }
 
+function TeamSettingsContent() {
+    return (
+        <Card>
+          <CardHeader>
+            <CardTitle>Users</CardTitle>
+            <CardDescription>
+              Manage your team members and their permissions here.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">User management functionality will be implemented here.</p>
+          </CardContent>
+        </Card>
+    )
+}
+
 export default function SettingsPage() {
   return (
     <Tabs defaultValue="general" className="w-full">
@@ -155,6 +171,7 @@ export default function SettingsPage() {
         <TabsTrigger value="general">General</TabsTrigger>
         <TabsTrigger value="qrcodes">QR Codes</TabsTrigger>
         <TabsTrigger value="bookings">Bookings</TabsTrigger>
+        <TabsTrigger value="team">Team</TabsTrigger>
       </TabsList>
       <TabsContent value="general" className="mt-4">
         <GeneralSettingsContent />
@@ -164,6 +181,9 @@ export default function SettingsPage() {
       </TabsContent>
       <TabsContent value="bookings" className="mt-4">
         <BookingsSettingsContent />
+      </TabsContent>
+      <TabsContent value="team" className="mt-4">
+        <TeamSettingsContent />
       </TabsContent>
     </Tabs>
   )

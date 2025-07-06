@@ -51,7 +51,6 @@ export default function AppLayout({
     const getPageTitle = (path: string) => {
         if (path === '/') return 'Dashboard'
         if (path === '/scan') return 'Scan QR Code'
-        if (path.startsWith('/team')) return 'Users'
         if (path === '/bookings') return 'Bookings'
         if (path === '/reminders') return 'Reminders'
         if (path === '/categories') return 'Categories'
@@ -88,15 +87,6 @@ export default function AppLayout({
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                         
-                        <SidebarSeparator className="my-2" />
-
-                        <SidebarMenuItem>
-                            <SidebarMenuButton href="/team/users" isActive={pathname.startsWith('/team')} tooltip="Users">
-                                <Users />
-                                Users
-                            </SidebarMenuButton>
-                        </SidebarMenuItem>
-
                         <SidebarSeparator className="my-2" />
 
                         <SidebarMenuItem>
