@@ -8,6 +8,9 @@ import {
   endOfDay,
   format,
   isSameDay,
+  startOfMonth,
+  endOfMonth,
+  areIntervalsOverlapping,
 } from "date-fns"
 import type { DayProps } from "react-day-picker"
 
@@ -28,7 +31,12 @@ interface BookingCalendarProps {
   className?: string
 }
 
-const BookingCalendarContext = React.createContext<{ bookings: Booking[] } | null>(null);
+interface BookingCalendarContextValue {
+    bookings: Booking[];
+    bookingLayout: Map<string, number>;
+}
+
+const BookingCalendarContext = React.createContext<BookingCalendarContextValue | null>(null);
 
 function useBookingCalendarContext() {
     const context = React.useContext(BookingCalendarContext);
@@ -39,7 +47,7 @@ function useBookingCalendarContext() {
 }
 
 function DayWithBookings({ displayMonth, date }: DayProps) {
-  const { bookings } = useBookingCalendarContext()
+  const { bookings, bookingLayout } = useBookingCalendarContext()
 
   const bookingsForDay = React.useMemo(() => {
     return bookings.filter(
@@ -49,25 +57,43 @@ function DayWithBookings({ displayMonth, date }: DayProps) {
           start: startOfDay(new Date(booking.startDate)),
           end: endOfDay(new Date(booking.endDate)),
         })
-    ).sort((a,b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    )
   }, [bookings, date])
 
   const isOutside = date.getMonth() !== displayMonth.getMonth();
 
+  const MAX_TRACKS_TO_SHOW = 3
+
+  const tracksForDay = React.useMemo(() => {
+    const tracks = Array.from({ length: MAX_TRACKS_TO_SHOW }, () => null as Booking | null);
+    bookingsForDay.forEach(booking => {
+      const trackIndex = bookingLayout.get(booking.id);
+      if (trackIndex !== undefined && trackIndex < MAX_TRACKS_TO_SHOW) {
+        tracks[trackIndex] = booking;
+      }
+    });
+    return tracks;
+  }, [bookingsForDay, bookingLayout]);
+
+  const hiddenBookingsCount = bookingsForDay.filter(b => (bookingLayout.get(b.id) ?? MAX_TRACKS_TO_SHOW) >= MAX_TRACKS_TO_SHOW).length;
+
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-col items-start",
+        "relative flex h-full w-full flex-col items-start p-1",
         isOutside && "text-muted-foreground/50",
       )}
     >
-      <time dateTime={date.toISOString()} className="p-1">{format(date, "d")}</time>
+      <time dateTime={date.toISOString()}>{format(date, "d")}</time>
       {bookingsForDay.length > 0 && (
-        <div className="flex w-full flex-1 flex-col gap-1 overflow-hidden">
-          {bookingsForDay.slice(0, 3).map((booking) => {
+        <div className="absolute inset-x-0 top-7 flex w-full flex-1 flex-col gap-1 px-1">
+          {tracksForDay.map((booking, trackIndex) => {
+            if (!booking) {
+              return <div key={trackIndex} className="h-4" />;
+            }
+
             const bookingStart = startOfDay(new Date(booking.startDate))
             const bookingEnd = startOfDay(new Date(booking.endDate))
-            
             const isStart = isSameDay(date, bookingStart)
             const isEnd = isSameDay(date, bookingEnd)
 
@@ -102,9 +128,9 @@ function DayWithBookings({ displayMonth, date }: DayProps) {
               </Tooltip>
             )
           })}
-          {bookingsForDay.length > 3 && (
-            <div className="text-xs text-muted-foreground px-1 mt-1">
-              + {bookingsForDay.length - 3} more
+          {hiddenBookingsCount > 0 && (
+            <div className="text-xs text-muted-foreground mt-1">
+              + {hiddenBookingsCount} more
             </div>
           )}
         </div>
@@ -114,7 +140,48 @@ function DayWithBookings({ displayMonth, date }: DayProps) {
 }
 
 export function BookingCalendar({ bookings, month, onMonthChange, className }: BookingCalendarProps) {
-  const contextValue = React.useMemo(() => ({ bookings }), [bookings]);
+  const [bookingLayout, setBookingLayout] = React.useState<Map<string, number>>(new Map());
+
+  React.useEffect(() => {
+    const monthStart = startOfMonth(month);
+    const monthEnd = endOfMonth(month);
+
+    const monthBookings = bookings
+        .filter(b => 
+            (b.status === 'Active' || b.status === 'Upcoming') &&
+            areIntervalsOverlapping(
+                { start: new Date(b.startDate), end: new Date(b.endDate) },
+                { start: monthStart, end: monthEnd }
+            )
+        )
+        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    
+    const layout = new Map<string, number>();
+    const tracks: Date[] = [];
+
+    monthBookings.forEach(booking => {
+        const bookingStart = new Date(booking.startDate);
+        let assignedTrack = -1;
+
+        for (let i = 0; i < tracks.length; i++) {
+            if (bookingStart > tracks[i]) {
+                assignedTrack = i;
+                break;
+            }
+        }
+
+        if (assignedTrack === -1) {
+            assignedTrack = tracks.length;
+        }
+
+        layout.set(booking.id, assignedTrack);
+        tracks[assignedTrack] = new Date(booking.endDate);
+    });
+
+    setBookingLayout(layout);
+  }, [bookings, month]);
+
+  const contextValue = React.useMemo(() => ({ bookings, bookingLayout }), [bookings, bookingLayout]);
   
   return (
     <BookingCalendarContext.Provider value={contextValue}>
