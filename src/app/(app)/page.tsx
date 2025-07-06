@@ -48,10 +48,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ClientDate } from "@/components/client-date"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
+import { 
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { QrCodeSvg } from "@/components/qr-code-svg"
+
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = React.useState("all")
   const [selectedAssets, setSelectedAssets] = React.useState<string[]>([])
+  const [showLabelAsset, setShowLabelAsset] = React.useState<Asset | null>(null)
 
   const getFilteredAssets = (): Asset[] => {
     if (activeTab === "all") {
@@ -235,7 +244,7 @@ export default function Dashboard() {
                                     <Pencil className="mr-2 h-4 w-4" />
                                     <span>Edit</span>
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setShowLabelAsset(asset)}>
                                     <Tag className="mr-2 h-4 w-4" />
                                     <span>Show Label</span>
                                 </DropdownMenuItem>
@@ -264,6 +273,22 @@ export default function Dashboard() {
                 </Table>
             </CardContent>
         </Card>
+        {showLabelAsset && (
+            <Dialog open={!!showLabelAsset} onOpenChange={(isOpen) => !isOpen && setShowLabelAsset(null)}>
+                <DialogContent className="sm:max-w-xs">
+                <DialogHeader>
+                    <DialogTitle>Asset Label</DialogTitle>
+                </DialogHeader>
+                <div className="p-4 bg-white rounded-md text-black flex flex-col items-center justify-center text-center">
+                    <p className="font-bold text-lg">{showLabelAsset.name}</p>
+                    <div className="w-40 h-40 p-2 mx-auto">
+                        <QrCodeSvg path={`/scan?assetId=${showLabelAsset.id}`} />
+                    </div>
+                    <p className="text-xs text-muted-foreground text-center font-mono">{showLabelAsset.qrCodeId}</p>
+                </div>
+                </DialogContent>
+            </Dialog>
+        )}
     </div>
   )
 }
