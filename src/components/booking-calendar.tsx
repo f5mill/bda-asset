@@ -59,33 +59,35 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
 
   const buttonContent = (
     <>
-      <time dateTime={date.toISOString()}>{format(date, "d")}</time>
+      <div className="p-1">
+        <time dateTime={date.toISOString()}>{format(date, "d")}</time>
+      </div>
       {bookingsForDay.length > 0 && (
-        <div className="flex w-full flex-1 flex-col gap-1 overflow-hidden pt-1">
+        <div className="flex w-full flex-1 flex-col gap-1 overflow-hidden px-1 pb-1">
           {bookingsForDay.slice(0, 3).map((booking) => {
             const bookingStart = startOfDay(new Date(booking.startDate))
             const bookingEnd = startOfDay(new Date(booking.endDate))
             
             const isStart = isSameDay(date, bookingStart)
             const isEnd = isSameDay(date, bookingEnd)
-            // Day of week: 0 for Sunday, 1 for Monday, etc. Since weekStartsOn={1}, this works.
-            const dayOfWeek = date.getDay()
+            
+            const isWeekStart = date.getDay() === 1 // Monday
+            const isWeekEnd = date.getDay() === 0 // Sunday
 
-            // Show title if it's the first day of the booking, or the first day of the week (Monday)
-            const showTitle = isStart || dayOfWeek === 1
+            const showTitle = isStart || isWeekStart
 
             return (
               <div
                 key={booking.id}
                 className={cn(
-                  "truncate text-left text-xs py-0.5 -mx-1 px-1 w-[calc(100%_+_0.5rem)]",
+                  "truncate text-left text-xs py-0.5 px-1",
                   {
                     "bg-primary text-primary-foreground": booking.status === "Active",
                     "bg-accent text-accent-foreground": booking.status === "Upcoming"
                   },
                   {
-                    "rounded-l-sm": isStart || dayOfWeek === 1,
-                    "rounded-r-sm": isEnd || dayOfWeek === 0,
+                    "rounded-l-sm": isStart || isWeekStart,
+                    "rounded-r-sm": isEnd || isWeekEnd,
                   }
                 )}
               >
@@ -94,7 +96,7 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
             )
           })}
           {bookingsForDay.length > 3 && (
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-muted-foreground px-1">
               + {bookingsForDay.length - 3} more
             </div>
           )}
@@ -113,7 +115,7 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
             type="button"
             className={cn(
               buttonVariants({ variant: "ghost" }),
-              "relative h-full w-full flex-col items-start justify-start p-1 font-normal",
+              "relative h-full w-full flex-col items-start justify-start font-normal",
               isOutside && "text-muted-foreground opacity-70",
               props.className
             )}
@@ -170,13 +172,15 @@ function DayWithBookings({ displayMonth, date, ...props }: DayProps) {
         type="button"
         className={cn(
             buttonVariants({ variant: "ghost" }),
-            "h-full w-full flex-col items-start justify-start p-1 font-normal",
+            "h-full w-full flex-col items-start justify-start font-normal",
             isOutside && "text-muted-foreground opacity-70",
             props.className
         )}
         disabled={props.disabled}
     >
-      <time dateTime={date.toISOString()}>{format(date, "d")}</time>
+      <div className="p-1">
+        <time dateTime={date.toISOString()}>{format(date, "d")}</time>
+      </div>
     </button>
   )
 }
@@ -201,7 +205,7 @@ export function BookingCalendar({ bookings, month, onMonthChange, className }: B
           head_cell: "text-muted-foreground rounded-md w-full font-normal text-[0.8rem] p-2 text-center",
           row: "flex w-full mt-0 border-b",
           cell: "h-32 w-full text-center text-sm p-0 relative focus-within:relative focus-within:z-20 border-r last:border-r-0",
-          day: "h-full w-full p-1",
+          day: "h-full w-full",
           day_today: "bg-accent text-accent-foreground",
         }}
         components={{
