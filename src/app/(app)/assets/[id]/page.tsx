@@ -317,15 +317,15 @@ export default function AssetDetailsPage() {
             <span className="sr-only">Back</span>
           </Button>
         </Link>
-        <div className="flex items-baseline gap-2">
-            <h1 className="text-xl font-semibold font-headline tracking-tight">
+        <div className="flex flex-shrink min-w-0 items-baseline gap-2">
+            <h1 className="truncate text-xl font-semibold font-headline tracking-tight">
                 {asset.name}
             </h1>
-            <Badge variant={getBadgeVariant(asset.status) as any}>
+            <Badge variant={getBadgeVariant(asset.status) as any} className="flex-shrink-0">
                 {asset.status}
             </Badge>
         </div>
-        <div className="hidden items-center gap-2 md:ml-auto md:flex">
+        <div className="ml-auto flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline">Actions</Button>
@@ -363,7 +363,7 @@ export default function AssetDetailsPage() {
                 <Pencil className="mr-2 h-4 w-4" />
                 <span>Edit</span>
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {}}>
                 <Tag className="mr-2 h-4 w-4" />
                 <span>Show Label</span>
               </DropdownMenuItem>
